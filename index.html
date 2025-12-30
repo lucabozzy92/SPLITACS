@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OGame - CDR Splitter (Dev Version)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>OGame - CDR Splitter (API Reader)</h1>
+
+    <div class="section api-section">
+        <h3>1. Importazione Automatica (API)</h3>
+        <p class="api-note">Inserisci le chiavi API. Il tool chiamerà i server esterni (es. ogapi.faw-kes.de) per decriptare i dati.</p>
+        
+        <div class="input-group">
+            <div class="input-wrapper">
+                <label>Chiave Combat Report (CR)</label>
+                <input type="text" id="api-cr" placeholder="cr-it-123-xxxxxxxxxx">
+                <small>Serve per trovare i nomi degli attaccanti.</small>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <label>Chiavi Recycle Report (RR)</label>
+                <textarea id="api-rr" placeholder="rr-it-123-yyyyyyyyyy&#10;rr-it-123-zzzzzzzzzz"></textarea>
+                <small>Inserisci una chiave per riga. Serve per contare le risorse raccolte.</small>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items: center;">
+            <button class="btn-primary" id="btn-fetch">📡 Decripta API & Compila</button>
+            <div id="api-status" class="status-msg"></div>
+        </div>
+    </div>
+
+    <div class="section res-met">
+        <h3>2. Risorse CDR</h3>
+        <div class="input-group">
+            <div class="input-wrapper">
+                <label for="totalMetal">Metallo</label>
+                <input type="number" id="totalMetal" placeholder="0">
+            </div>
+            <div class="input-wrapper">
+                <label for="totalCrystal">Cristallo</label>
+                <input type="number" id="totalCrystal" placeholder="0">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>3. Flotta</h3>
+        <div class="input-group">
+            <div class="input-wrapper">
+                <label for="recCapacity">Capacità Stiva</label>
+                <input type="number" id="recCapacity" value="20000">
+            </div>
+            <div class="input-wrapper" style="display:flex; align-items:flex-end;">
+               <div id="recsNeeded" style="font-weight:bold; color: var(--accent-color);">Navi necessarie: 0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>4. Partecipanti (SAC)</h3>
+        <div id="players-container"></div>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn-secondary" id="btn-add-player">+ Aggiungi Manuale</button>
+            <button class="btn-secondary" id="btn-distribute">Dividi Equamente</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>5. Risultato Finale</h3>
+        <div id="table-container"></div>
+
+        <h4>Testo per Chat/Discord</h4>
+        <div class="result-box" id="copyText">In attesa di calcolo...</div>
+        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Risultato</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

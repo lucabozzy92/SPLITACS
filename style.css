@@ -1,0 +1,123 @@
+:root {
+    --bg-color: #0d1014;
+    --panel-color: #161b22;
+    --border-color: #30363d;
+    --text-color: #c9d1d9;
+    --accent-color: #58a6ff;
+    --metal-color: #8c8c8c;
+    --crystal-color: #58a6ff;
+    --deuterium-color: #3fb950;
+    --success-color: #238636;
+    --danger-color: #da3633;
+    --warning-color: #d29922;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    background-color: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+h1, h3 {
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+.section {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.section.api-section {
+    border-color: var(--accent-color);
+    background: rgba(88, 166, 255, 0.05);
+}
+
+label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #8b949e; }
+small { color: #8b949e; display: block; margin-top: 2px; }
+
+.input-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+.input-wrapper { flex: 1; min-width: 200px; }
+
+input[type="number"], input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #0d1117;
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: monospace;
+}
+
+textarea { resize: vertical; min-height: 80px; font-size: 0.85em; }
+
+input:focus, textarea:focus { outline: none; border-color: var(--accent-color); }
+
+button {
+    cursor: pointer;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 0.9em;
+}
+button:hover { opacity: 0.9; }
+
+.btn-primary { background-color: var(--accent-color); }
+.btn-success { background-color: var(--success-color); }
+.btn-danger { background-color: var(--danger-color); }
+.btn-secondary { background-color: var(--border-color); color: var(--text-color); }
+.btn-loader { background-color: var(--warning-color); color: #161b22; }
+
+/* Player Rows */
+.player-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+.player-row input[type="text"] { flex: 2; }
+.player-row input[type="number"] { flex: 1; }
+.remove-btn { padding: 5px 12px; }
+
+/* Output Table */
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border-color); }
+th { color: var(--accent-color); }
+
+.result-box {
+    background-color: #0d1117;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    margin-top: 10px;
+    font-size: 0.85em;
+}
+
+.status-msg { margin-top: 0; margin-left: 10px; font-weight: bold; font-size: 0.9em; }
+.status-ok { color: var(--success-color); }
+.status-err { color: var(--danger-color); }
+
+.res-met { border-left: 3px solid var(--metal-color); }
+.res-crys { border-left: 3px solid var(--crystal-color); }
+
+.loading { opacity: 0.6; pointer-events: none; }
