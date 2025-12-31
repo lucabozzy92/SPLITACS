@@ -3,84 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OGame - CDR Splitter (Dev Version)</title>
+    <title>OGame - SPLIT ACS DEBRIS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <h1>OGame - CDR Splitter (API Reader)</h1>
+    <div class="logo-container">
+        <h1 class="main-title">OGame <span class="highlight">SPLIT</span> ACS DEBRIS</h1>
+        <div class="subtitle">Advanced CR & RR Analyzer</div>
+    </div>
 
-    <div class="section api-section">
-        <h3>1. Importazione Automatica (API)</h3>
-        <p class="api-note">Inserisci le chiavi API. Il tool chiamerà i server esterni (es. ogapi.faw-kes.de) per decriptare i dati.</p>
+    <div class="section">
+        <h3>1. Incolla Dati RAW</h3>
+        <p class="api-note">Copia tutto il contenuto dello "stdClass Object" dal tool API e incollalo qui.</p>
         
-        <div class="input-group">
+        <div class="raw-input-container">
             <div class="input-wrapper">
-                <label>Chiave Combat Report (CR)</label>
-                <input type="text" id="api-cr" placeholder="cr-it-123-xxxxxxxxxx">
-                <small>Serve per trovare i nomi degli attaccanti.</small>
+                <label>Combat Report (CR) - RAW</label>
+                <textarea id="raw-cr" placeholder="Incolla qui il RAW del Combat Report (inizia con stdClass Object...)"></textarea>
+            </div>
+            <div class="input-wrapper">
+                <label>Recycle Report (RR) - RAW</label>
+                <textarea id="raw-rr" placeholder="Incolla qui il RAW del Recycle Report"></textarea>
             </div>
         </div>
 
-        <div class="input-group">
-            <div class="input-wrapper">
-                <label>Chiavi Recycle Report (RR)</label>
-                <textarea id="api-rr" placeholder="rr-it-123-yyyyyyyyyy&#10;rr-it-123-zzzzzzzzzz"></textarea>
-                <small>Inserisci una chiave per riga. Serve per contare le risorse raccolte.</small>
+        <button class="btn-primary" id="btn-parse">🚀 ANALIZZA DATI</button>
+        <div id="parse-status" class="status-msg"></div>
+    </div>
+
+    <div class="section config-section">
+        <h3>2. Impostazioni Spartizione</h3>
+        
+        <div class="config-row">
+            <div class="config-group">
+                <span class="label">Chi sta dividendo?</span>
+                <div class="toggle-group">
+                    <label>
+                        <input type="radio" name="role" value="attacker" checked> ⚔️ Attaccanti
+                    </label>
+                    <label>
+                        <input type="radio" name="role" value="defender"> 🛡️ Difensori
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <span class="label">Metodo di Calcolo:</span>
+                <div class="toggle-group">
+                    <label>
+                        <input type="radio" name="method" value="equal" checked> 🤝 Equa (Uguale)
+                    </label>
+                    <label>
+                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (In base alla flotta)
+                    </label>
+                </div>
             </div>
         </div>
-
-        <div style="display:flex; gap:10px; align-items: center;">
-            <button class="btn-primary" id="btn-fetch">📡 Decripta API & Compila</button>
-            <div id="api-status" class="status-msg"></div>
-        </div>
+        <p class="small-info">In entrambi i casi, le perdite vengono rimborsate prima di dividere l'utile.</p>
     </div>
 
     <div class="section res-met">
-        <h3>2. Risorse CDR</h3>
+        <h3>3. Risorse Raccolte (Totali)</h3>
         <div class="input-group">
             <div class="input-wrapper">
-                <label for="totalMetal">Metallo</label>
+                <label class="l-met">Metallo</label>
                 <input type="number" id="totalMetal" placeholder="0">
             </div>
             <div class="input-wrapper">
-                <label for="totalCrystal">Cristallo</label>
+                <label class="l-crys">Cristallo</label>
                 <input type="number" id="totalCrystal" placeholder="0">
             </div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>3. Flotta</h3>
-        <div class="input-group">
             <div class="input-wrapper">
-                <label for="recCapacity">Capacità Stiva</label>
-                <input type="number" id="recCapacity" value="20000">
-            </div>
-            <div class="input-wrapper" style="display:flex; align-items:flex-end;">
-               <div id="recsNeeded" style="font-weight:bold; color: var(--accent-color);">Navi necessarie: 0</div>
+                <label class="l-deut">Deuterio</label>
+                <input type="number" id="totalDeuterium" placeholder="0">
             </div>
         </div>
     </div>
 
     <div class="section">
-        <h3>4. Partecipanti (SAC)</h3>
-        <div id="players-container"></div>
-        
-        <div style="margin-top: 15px; display: flex; gap: 10px;">
-            <button class="btn-secondary" id="btn-add-player">+ Aggiungi Manuale</button>
-            <button class="btn-secondary" id="btn-distribute">Dividi Equamente</button>
+        <h3>4. Risultati</h3>
+        <div style="margin-bottom: 10px; text-align: right;">
+            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Aggiorna Calcoli</button>
         </div>
-    </div>
-
-    <div class="section">
-        <h3>5. Risultato Finale</h3>
         <div id="table-container"></div>
 
-        <h4>Testo per Chat/Discord</h4>
-        <div class="result-box" id="copyText">In attesa di calcolo...</div>
-        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Risultato</button>
+        <h4>Output per Chat / Discord</h4>
+        <div class="result-box" id="copyText">In attesa di analisi...</div>
+        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Testo</button>
     </div>
 </div>
 

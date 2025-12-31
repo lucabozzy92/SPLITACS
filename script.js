@@ -1,244 +1,252 @@
-/* --- STATO E INIZIALIZZAZIONE --- */
-let players = [
-    { id: 1, name: 'Attaccante 1', percent: 100 }
-];
+/* --- CONFIGURAZIONE COSTI NAVI (Standard OGame + Lifeforms) --- */
+// Formato: Metallo, Cristallo, Deuterio
+const SHIPS = {
+    202: { m: 3000, c: 1000, d: 0, name: "Light Fighter" },
+    203: { m: 6000, c: 4000, d: 0, name: "Heavy Fighter" },
+    204: { m: 20000, c: 7000, d: 2000, name: "Cruiser" },
+    205: { m: 45000, c: 15000, d: 0, name: "Battleship" },
+    206: { m: 10000, c: 20000, d: 10000, name: "Colony Ship" },
+    207: { m: 10000, c: 6000, d: 2000, name: "Recycler" },
+    208: { m: 0, c: 1000, d: 0, name: "Espionage Probe" },
+    209: { m: 50000, c: 25000, d: 15000, name: "Bomber" },
+    210: { m: 0, c: 2000, d: 500, name: "Solar Satellite" },
+    211: { m: 60000, c: 50000, d: 15000, name: "Destroyer" },
+    212: { m: 5000000, c: 4000000, d: 1000000, name: "Deathstar" },
+    213: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
+    214: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }, 
+    215: { m: 30000, c: 40000, d: 15000, name: "Battlecruiser" },
+    218: { m: 2000, c: 2000, d: 1000, name: "Crawler" },
+    219: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }
+};
+
+let parsedPlayers = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-    init();
-    setupEventListeners();
+    document.getElementById('btn-parse').addEventListener('click', parseRawData);
+    document.getElementById('btn-recalc').addEventListener('click', calculateDistribution);
+    document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
 });
 
-function setupEventListeners() {
-    document.getElementById('btn-fetch').addEventListener('click', processApiKeys);
-    document.getElementById('totalMetal').addEventListener('input', calculate);
-    document.getElementById('totalCrystal').addEventListener('input', calculate);
-    document.getElementById('recCapacity').addEventListener('input', calculate);
-    document.getElementById('btn-add-player').addEventListener('click', addPlayer);
-    document.getElementById('btn-distribute').addEventListener('click', distributeEqually);
-    document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
-}
+/* --- PARSING LOGIC --- */
+function parseRawData() {
+    const rawCR = document.getElementById('raw-cr').value;
+    const rawRR = document.getElementById('raw-rr').value;
+    const statusDiv = document.getElementById('parse-status');
+    // Quale ruolo stiamo cercando? (attacker o defender)
+    const role = document.querySelector('input[name="role"]:checked').value; 
 
-function init() {
-    renderPlayers();
-    calculate();
-}
-
-/* --- LOGICA API CALL (MOCK) --- */
-
-async function processApiKeys() {
-    const crKey = document.getElementById('api-cr').value.trim();
-    const rrKeys = document.getElementById('api-rr').value.trim().split('\n').filter(k => k.length > 5);
-    const statusDiv = document.getElementById('api-status');
-    const btn = document.getElementById('btn-fetch');
-
-    if (!crKey && rrKeys.length === 0) {
-        alert("Inserisci almeno una chiave API per testare la demo.");
-        return;
-    }
-
-    // UI Loading State
-    btn.classList.add('loading');
-    btn.innerText = "Caricamento...";
-    statusDiv.innerText = "";
-
-    let totalMet = 0;
-    let totalCrys = 0;
-    let attackersFound = [];
-
+    parsedPlayers = [];
+    
     try {
-        // 1. Processo CR (Combat Report)
-        if (crKey) {
-            const crData = await fetchOgameData(crKey);
-            if (crData && crData.attackers) {
-                attackersFound = crData.attackers; 
-            }
-        }
+        if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
-        // 2. Processo RR (Recycle Reports)
-        for (const key of rrKeys) {
-            const rrData = await fetchOgameData(key);
-            if (rrData) {
-                totalMet += rrData.metal || 0;
-                totalCrys += rrData.crystal || 0;
-            }
-        }
+        // 1. TROVARE I GIOCATORI E LA FLOTTA INIZIALE
+        // La sezione inizia con [attackers] => Array o [defenders] => Array
+        const roleSectionRegex = role === 'attacker' ? /\[attackers\] => Array/ : /\[defenders\] => Array/;
+        const splitByRole = rawCR.split(roleSectionRegex);
+        
+        if (splitByRole.length < 2) throw new Error(`Sezione ${role} non trovata nel RAW.`);
+        
+        // Prendiamo il blocco di testo relativo a quel ruolo
+        const roleContent = splitByRole[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
 
-        // 3. Aggiornamento UI
-        if (attackersFound.length > 0) {
-            players = [];
-            attackersFound.forEach((name, idx) => {
-                players.push({ id: idx + 1, name: name, percent: 0 });
+        // Dividiamo per indici [0] => stdClass, [1] => stdClass...
+        // Regex per catturare l'inizio di un giocatore: [n] => stdClass Object
+        const playerBlocks = roleContent.split(/\[\d+\] => stdClass Object/);
+
+        // Il primo elemento è vuoto o sporcizia prima del primo match, lo ignoriamo
+        for (let i = 1; i < playerBlocks.length; i++) {
+            const block = playerBlocks[i];
+            
+            // Estrai Nome
+            const nameMatch = block.match(/\[fleet_owner\] => (.*)/);
+            if (!nameMatch) continue; // Skip se non trovi il nome
+            const playerName = nameMatch[1].trim();
+
+            // Calcola Valore Flotta Iniziale (per metodo Pesato)
+            let initialValue = 0;
+            // Cerchiamo le navi: [ship_type] => 204 ... [count] => 100
+            // Usiamo una regex globale sul blocco del giocatore
+            const shipRegex = /\[ship_type\] => (\d+)\s*[^\[]*\[count\] => (\d+)/g;
+            let match;
+            while ((match = shipRegex.exec(block)) !== null) {
+                const sId = parseInt(match[1]);
+                const count = parseInt(match[2]);
+                if (SHIPS[sId]) {
+                    initialValue += (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
+                }
+            }
+
+            parsedPlayers.push({
+                id: i - 1, // Indice interno (0, 1, 2...)
+                name: playerName,
+                initialValue: initialValue,
+                lostValue: 0 // Lo calcoliamo dopo
             });
         }
 
-        if (totalMet > 0 || totalCrys > 0) {
-            document.getElementById('totalMetal').value = totalMet;
-            document.getElementById('totalCrystal').value = totalCrys;
-        }
+        // 2. CALCOLO PERDITE (LOSSES)
+        // Bisogna cercare nei Round. Nel RAW ci sono vari [rounds].
+        // Cerchiamo [attacker_ship_losses] o [defender_ship_losses] dentro i round.
+        const lossTag = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
+        
+        // Split per round o scansione globale delle perdite
+        const roundsSection = rawCR.split(/\[rounds\] => Array/)[1];
+        if (roundsSection) {
+            // Cerchiamo i blocchi di perdita. Esempio:
+            // [owner] => 0 ... [ship_type] => 204 ... [count] => 5
+            
+            // Nota: I raw OGame a volte ripetono le perdite o mostrano il cumulativo.
+            // Assumiamo che il RAW contenga la somma corretta se parsiamo tutti i blocchi di "losses" trovati.
+            // Tuttavia, se ci sono 5 round, dobbiamo stare attenti a non sommare duplicati se il report è cumulativo.
+            // Solitamente nei dump API, ogni round ha le perdite "avvenute in quel round". Quindi sommiamo tutto.
+            
+            // Per sicurezza, filtriamo solo i blocchi dentro al tag lossTag
+            const lossBlocks = roundsSection.split(lossTag);
+            
+            // Dal secondo blocco in poi ci sono i dati delle perdite
+            for(let k=1; k < lossBlocks.length; k++) {
+                const lb = lossBlocks[k].split(/\[(attacker_ships|defender_ships|defender_ship_losses|attacker_ship_losses)\]/)[0];
+                
+                const lossRegex = /\[owner\] => (\d+)\s*\[ship_type\] => (\d+)\s*\[count\] => (\d+)/g;
+                let lMatch;
+                while ((lMatch = lossRegex.exec(lb)) !== null) {
+                    const ownerIdx = parseInt(lMatch[1]);
+                    const sId = parseInt(lMatch[2]);
+                    const count = parseInt(lMatch[3]);
 
-        distributeEqually();
-        statusDiv.innerHTML = `<span class="status-ok">✔ Dati importati (Demo)</span>`;
-
-    } catch (error) {
-        console.error(error);
-        statusDiv.innerHTML = `<span class="status-err">⚠ Errore: ${error.message}</span>`;
-    } finally {
-        btn.classList.remove('loading');
-        btn.innerText = "📡 Decripta API & Compila";
-    }
-}
-
-// Simulazione chiamata al servizio esterno
-async function fetchOgameData(apiKey) {
-    const parts = apiKey.split('-');
-    const type = parts[0]; // cr o rr
-    
-    console.log(`[DEMO] Mocking fetch for: ${apiKey}`);
-
-    // SIMULAZIONE RISPOSTA DAL SERVER ESTERNO
-    // Qui andrebbe la fetch reale a ogapi.faw-kes.de
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            if (type === 'cr' || apiKey.includes('cr-')) {
-                resolve({
-                    success: true,
-                    attackers: ["Commander Shepard", "Garrus Vakarian", "Liara T'Soni"],
-                    defender: ["Saren"]
-                });
-            } else if (type === 'rr' || apiKey.includes('rr-')) {
-                // Numeri casuali per rendere la demo dinamica
-                resolve({
-                    success: true,
-                    metal: 10000000 + Math.floor(Math.random() * 5000000),
-                    crystal: 5000000 + Math.floor(Math.random() * 2000000)
-                });
-            } else {
-                resolve(null);
+                    if (parsedPlayers[ownerIdx] && SHIPS[sId]) {
+                        parsedPlayers[ownerIdx].lostValue += (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
+                    }
+                }
             }
-        }, 600); 
-    });
-}
-
-/* --- LOGICA CALCOLO & UI --- */
-
-function addPlayer() {
-    const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
-    players.push({ id: newId, name: `Giocatore ${players.length + 1}`, percent: 0 });
-    renderPlayers();
-    calculate();
-}
-
-function removePlayer(id) {
-    if (players.length <= 1) return;
-    players = players.filter(p => p.id !== id);
-    renderPlayers();
-    calculate();
-}
-
-// Funzione esposta globalmente per essere chiamata dall'HTML onclick
-window.removePlayer = removePlayer; 
-
-function updatePlayer(id, field, value) {
-    const player = players.find(p => p.id === id);
-    if (player) {
-        player[field] = field === 'percent' ? parseFloat(value) || 0 : value;
-        calculate();
-    }
-}
-window.updatePlayer = updatePlayer;
-
-function distributeEqually() {
-    const count = players.length;
-    if (count === 0) return;
-    const equalShare = (100 / count).toFixed(2);
-    
-    let currentTotal = 0;
-    players.forEach((p, index) => {
-        if (index === count - 1) {
-            p.percent = parseFloat((100 - currentTotal).toFixed(2));
-        } else {
-            p.percent = parseFloat(equalShare);
-            currentTotal += p.percent;
         }
-    });
-    renderPlayers();
-    calculate();
-}
 
-function renderPlayers() {
-    const container = document.getElementById('players-container');
-    container.innerHTML = '';
+        // 3. ESTRAZIONE RISORSE (RR o CR)
+        let totMet = 0, totCrys = 0, totDeut = 0;
 
-    players.forEach(p => {
-        const row = document.createElement('div');
-        row.className = 'player-row';
-        row.innerHTML = `
-            <input type="text" value="${p.name}" placeholder="Nome" oninput="window.updatePlayer(${p.id}, 'name', this.value)">
-            <input type="number" value="${p.percent}" placeholder="%" step="0.1" oninput="window.updatePlayer(${p.id}, 'percent', this.value)">
-            <span style="font-weight:bold">%</span>
-            <button class="btn-danger remove-btn" onclick="window.removePlayer(${p.id})">&times;</button>
-        `;
-        container.appendChild(row);
-    });
-}
+        if (rawRR && rawRR.length > 20) {
+            // Priorità al Recycle Report se presente
+            totMet = extractRes(rawRR, /\[metal_retrieved\] => (\d+)/) || extractRes(rawRR, /\[recycler_metal_retrieved\] => (\d+)/);
+            totCrys = extractRes(rawRR, /\[crystal_retrieved\] => (\d+)/) || extractRes(rawRR, /\[recycler_crystal_retrieved\] => (\d+)/);
+            totDeut = extractRes(rawRR, /\[deuterium_retrieved\] => (\d+)/) || extractRes(rawRR, /\[recycler_deuterium_retrieved\] => (\d+)/);
+        } else {
+            // Fallback sul Combat Report (Campi debris_metal_total...)
+            totMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
+            totCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
+            totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
+        }
 
-function formatNumber(num) {
-    return new Intl.NumberFormat('it-IT').format(Math.floor(num));
-}
+        // Aggiorna input
+        document.getElementById('totalMetal').value = totMet;
+        document.getElementById('totalCrystal').value = totCrys;
+        document.getElementById('totalDeuterium').value = totDeut;
 
-function calculate() {
-    const totalMetal = parseFloat(document.getElementById('totalMetal').value) || 0;
-    const totalCrystal = parseFloat(document.getElementById('totalCrystal').value) || 0;
-    const recCapacity = parseFloat(document.getElementById('recCapacity').value) || 20000;
+        if(parsedPlayers.length > 0) {
+            statusDiv.innerHTML = `<span class="text-ok">✅ Trovati ${parsedPlayers.length} giocatori. Perdite calcolate.</span>`;
+            calculateDistribution();
+        } else {
+            throw new Error("Nessun giocatore trovato. Il RAW è corretto?");
+        }
 
-    const totalRes = totalMetal + totalCrystal;
-    const recsNeeded = Math.ceil(totalRes / recCapacity);
-    
-    document.getElementById('recsNeeded').innerText = `Navi necessarie: ${formatNumber(recsNeeded)}`;
-
-    let tableHTML = `<table><thead><tr><th>Giocatore</th><th>%</th><th>Metallo</th><th>Cristallo</th><th>Totale</th></tr></thead><tbody>`;
-    let textOutput = `--- 🚀 SPARTIZIONE CDR ---\n`;
-    textOutput += `Totale Met: ${formatNumber(totalMetal)} | Totale Cris: ${formatNumber(totalCrystal)}\n`;
-    textOutput += `Riciclatrici: ${formatNumber(recsNeeded)}\n--------------------------\n`;
-
-    let currentSumPercent = 0;
-
-    players.forEach(p => {
-        currentSumPercent += p.percent;
-        const shareMetal = (totalMetal * p.percent) / 100;
-        const shareCrystal = (totalCrystal * p.percent) / 100;
-        const shareTotal = shareMetal + shareCrystal;
-
-        tableHTML += `
-            <tr>
-                <td>${p.name}</td>
-                <td>${p.percent}%</td>
-                <td style="color:#aaa">${formatNumber(shareMetal)}</td>
-                <td style="color:#58a6ff">${formatNumber(shareCrystal)}</td>
-                <td><strong>${formatNumber(shareTotal)}</strong></td>
-            </tr>
-        `;
-
-        textOutput += `> ${p.name} (${p.percent}%)\n`;
-        textOutput += `  Met: ${formatNumber(shareMetal)} | Cris: ${formatNumber(shareCrystal)}\n\n`;
-    });
-
-    tableHTML += `</tbody></table>`;
-    
-    if (Math.abs(currentSumPercent - 100) > 0.1) {
-            tableHTML += `<div style="color:var(--danger-color); margin-top:5px; font-weight:bold;">⚠️ ATTENZIONE: Totale percentuali = ${currentSumPercent.toFixed(2)}%</div>`;
+    } catch (e) {
+        console.error(e);
+        statusDiv.innerHTML = `<span class="text-err">⚠️ ${e.message}</span>`;
     }
+}
 
-    document.getElementById('table-container').innerHTML = tableHTML;
-    document.getElementById('copyText').innerText = textOutput;
+function extractRes(text, regex) {
+    const m = text.match(regex);
+    return m ? parseInt(m[1]) : 0;
+}
+
+function calculateDistribution() {
+    const totMet = parseFloat(document.getElementById('totalMetal').value) || 0;
+    const totCrys = parseFloat(document.getElementById('totalCrystal').value) || 0;
+    const totDeut = parseFloat(document.getElementById('totalDeuterium').value) || 0;
+    const method = document.querySelector('input[name="method"]:checked').value;
+    
+    const totalCDR = totMet + totCrys + totDeut;
+
+    let groupLoss = 0;
+    let groupInitial = 0;
+
+    parsedPlayers.forEach(p => {
+        groupLoss += p.lostValue;
+        groupInitial += p.initialValue;
+    });
+
+    const netProfit = totalCDR - groupLoss;
+
+    let html = `<table><thead><tr>
+        <th>Giocatore</th>
+        <th>Flotta Iniziale</th>
+        <th>Perdite (Rimborso)</th>
+        <th>Utile (${method === 'equal' ? 'Equo' : 'Pesato'})</th>
+        <th>TOTALE</th>
+    </tr></thead><tbody>`;
+
+    let txt = `--- 🚀 SPARTIZIONE CDR (${method.toUpperCase()}) ---\n`;
+    txt += `CDR Tot: ${fmt(totalCDR)} | Perdite: ${fmt(groupLoss)}\n`;
+    txt += `Utile Netto: ${fmt(netProfit)}\n--------------------------\n`;
+
+    parsedPlayers.forEach(p => {
+        // 1. Rimborso
+        let reimbursement = 0;
+        if (totalCDR >= groupLoss) {
+            reimbursement = p.lostValue;
+        } else {
+            // Se il CDR non copre nemmeno le perdite, rimborsa in %
+            reimbursement = (p.lostValue / groupLoss) * totalCDR;
+        }
+
+        // 2. Utile
+        let profitShare = 0;
+        if (netProfit > 0) {
+            if (method === 'equal') {
+                profitShare = netProfit / parsedPlayers.length;
+            } else {
+                // Weighted
+                const share = p.initialValue / groupInitial;
+                profitShare = netProfit * share;
+            }
+        }
+
+        const totalShare = reimbursement + profitShare;
+        const personalGain = totalShare - p.lostValue;
+
+        html += `<tr>
+            <td>${p.name}</td>
+            <td class="num" style="color:#8b949e">${fmt(p.initialValue)}</td>
+            <td class="num neg">-${fmt(p.lostValue)}</td>
+            <td class="num pos">+${fmt(profitShare)}</td>
+            <td class="num"><strong>${fmt(totalShare)}</strong></td>
+        </tr>`;
+
+        txt += `> ${p.name}\n`;
+        txt += `  Rimborso: ${fmt(reimbursement)}\n`;
+        txt += `  Utile: ${fmt(profitShare)}\n`;
+        txt += `  TOTALE: ${fmt(totalShare)}\n\n`;
+    });
+
+    html += `</tbody></table>`;
+    
+    if(parsedPlayers.length === 0) html = `<div style="text-align:center; padding:20px; color:#666;">Esegui l'analisi per vedere la tabella.</div>`;
+
+    document.getElementById('table-container').innerHTML = html;
+    document.getElementById('copyText').innerText = txt;
+}
+
+function fmt(n) {
+    return new Intl.NumberFormat('it-IT').format(Math.floor(n));
 }
 
 function copyToClipboard() {
     const text = document.getElementById('copyText').innerText;
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('btn-copy');
-        const originalText = btn.innerText;
+        const orig = btn.innerText;
         btn.innerText = "Copiato!";
-        setTimeout(() => btn.innerText = originalText, 2000);
+        setTimeout(() => btn.innerText = orig, 2000);
     });
 }
