@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OGame - SPLIT ACS DEBRIS</title>
+    <title>OGame - Spartizione CDR SAC</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
     <div class="logo-container">
-        <h1 class="main-title">OGame <span class="highlight">SPLIT</span> ACS DEBRIS</h1>
-        <div class="subtitle">Advanced CR & RR Analyzer</div>
+        <h1 class="main-title">OGame <span class="highlight">SPARTIZIONE</span> CDR SAC</h1>
+        <div class="subtitle">Analizzatore Avanzato CR & RR</div>
     </div>
 
     <div class="section">
-        <h3>1. Incolla Dati RAW</h3>
-        <p class="api-note">Copia tutto il contenuto dello "stdClass Object" dal tool API e incollalo qui.</p>
+        <h3>1. Inserimento Dati RAW (Grezzi)</h3>
+        <p class="api-note">Incolla qui il contenuto "stdClass Object" fornito dal lettore API.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -25,20 +25,20 @@
             </div>
             <div class="input-wrapper">
                 <label>Recycle Report (RR) - RAW</label>
-                <textarea id="raw-rr" placeholder="Incolla qui il RAW del Recycle Report"></textarea>
+                <textarea id="raw-rr" placeholder="Incolla qui il RAW del Recycle Report (Opzionale se inserisci i dati a mano sotto)"></textarea>
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ANALIZZA DATI</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA DATI</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
     <div class="section config-section">
-        <h3>2. Impostazioni Spartizione</h3>
+        <h3>2. Configurazione Spartizione</h3>
         
         <div class="config-row">
             <div class="config-group">
-                <span class="label">Chi sta dividendo?</span>
+                <span class="label">Ruolo da Calcolare:</span>
                 <div class="toggle-group">
                     <label>
                         <input type="radio" name="role" value="attacker" checked> ⚔️ Attaccanti
@@ -50,22 +50,22 @@
             </div>
 
             <div class="config-group">
-                <span class="label">Metodo di Calcolo:</span>
+                <span class="label">Metodo di Divisione Utile:</span>
                 <div class="toggle-group">
                     <label>
-                        <input type="radio" name="method" value="equal" checked> 🤝 Equa (Uguale)
+                        <input type="radio" name="method" value="equal" checked> 🤝 Equa (Parti Uguali)
                     </label>
                     <label>
-                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (In base alla flotta)
+                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (In base alla Flotta)
                     </label>
                 </div>
             </div>
         </div>
-        <p class="small-info">In entrambi i casi, le perdite vengono rimborsate prima di dividere l'utile.</p>
+        <p class="small-info">Nota: Le perdite vengono sempre rimborsate prima di dividere l'utile netto.</p>
     </div>
 
     <div class="section res-met">
-        <h3>3. Risorse Raccolte (Totali)</h3>
+        <h3>3. Risorse Raccolte (Totale CDR)</h3>
         <div class="input-group">
             <div class="input-wrapper">
                 <label class="l-met">Metallo</label>
@@ -83,14 +83,14 @@
     </div>
 
     <div class="section">
-        <h3>4. Risultati</h3>
+        <h3>4. Tabella Risultati</h3>
         <div style="margin-bottom: 10px; text-align: right;">
-            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Aggiorna Calcoli</button>
+            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola Manualmente</button>
         </div>
         <div id="table-container"></div>
 
-        <h4>Output per Chat / Discord</h4>
-        <div class="result-box" id="copyText">In attesa di analisi...</div>
+        <h4>Testo per Chat / Discord / Whatsapp</h4>
+        <div class="result-box" id="copyText">In attesa di elaborazione...</div>
         <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Testo</button>
     </div>
 </div>

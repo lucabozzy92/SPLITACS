@@ -1,19 +1,19 @@
-/* --- CONFIGURAZIONE COSTI NAVI (Standard OGame + Lifeforms) --- */
+/* --- CONFIGURAZIONE COSTI NAVI --- */
 const SHIPS = {
-    202: { m: 3000, c: 1000, d: 0, name: "Light Fighter" },
-    203: { m: 6000, c: 4000, d: 0, name: "Heavy Fighter" },
-    204: { m: 20000, c: 7000, d: 2000, name: "Cruiser" },
-    205: { m: 45000, c: 15000, d: 0, name: "Battleship" },
+    202: { m: 3000, c: 1000, d: 0, name: "Caccia Leggero" },
+    203: { m: 6000, c: 4000, d: 0, name: "Caccia Pesante" },
+    204: { m: 20000, c: 7000, d: 2000, name: "Incrociatore" },
+    205: { m: 45000, c: 15000, d: 0, name: "Nave da Battaglia" },
     206: { m: 10000, c: 20000, d: 10000, name: "Colony Ship" },
-    207: { m: 10000, c: 6000, d: 2000, name: "Recycler" },
-    208: { m: 0, c: 1000, d: 0, name: "Espionage Probe" },
-    209: { m: 50000, c: 25000, d: 15000, name: "Bomber" },
-    210: { m: 0, c: 2000, d: 500, name: "Solar Satellite" },
-    211: { m: 60000, c: 50000, d: 15000, name: "Destroyer" },
-    212: { m: 5000000, c: 4000000, d: 1000000, name: "Deathstar" },
+    207: { m: 10000, c: 6000, d: 2000, name: "Riciclatrice" },
+    208: { m: 0, c: 1000, d: 0, name: "Sonda Spia" },
+    209: { m: 50000, c: 25000, d: 15000, name: "Bombardiere" },
+    210: { m: 0, c: 2000, d: 500, name: "Satellite Solare" },
+    211: { m: 60000, c: 50000, d: 15000, name: "Corazzata" },
+    212: { m: 5000000, c: 4000000, d: 1000000, name: "Morte Nera" },
     213: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
     214: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }, 
-    215: { m: 30000, c: 40000, d: 15000, name: "Battlecruiser" },
+    215: { m: 30000, c: 40000, d: 15000, name: "Incrociatore da Battaglia" },
     218: { m: 2000, c: 2000, d: 1000, name: "Crawler" },
     219: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }
 };
@@ -42,46 +42,44 @@ function parseRawData() {
 
         // --- 1. IDENTIFICAZIONE GIOCATORI E FLOTTA INIZIALE ---
         
-        // Taglia il testo per trovare solo la sezione Attaccanti o Difensori
         const roleSectionRegex = role === 'attacker' ? /\[attackers\] => Array/ : /\[defenders\] => Array/;
         const splitByRole = rawCR.split(roleSectionRegex);
         
         if (splitByRole.length < 2) throw new Error(`Sezione ${role} non trovata nel RAW.`);
         
-        // Prendi il contenuto fino alla prossima sezione array (rounds, defenders, etc)
+        // Contenuto della sezione attaccanti/difensori
         const roleContent = splitByRole[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
 
-        // Dividiamo per blocchi ID: [0] => stdClass, [1] => stdClass...
+        // Dividiamo per blocchi flotta
         const playerBlocks = roleContent.split(/\[\d+\] => stdClass Object/);
 
-        // Cicla attraverso i blocchi trovati (Slot flotta)
+        // Cicla attraverso gli slot flotta
         for (let i = 1; i < playerBlocks.length; i++) {
             const block = playerBlocks[i];
-            const slotId = i - 1; // L'indice dello slot (0, 1, 2...)
+            const slotId = i - 1; // Indice slot (0, 1, 2...)
             
-            // Trova l'ID DEL GIOCATORE (Quello univoco)
+            // Trova ID e Nome
             const idMatch = block.match(/\[fleet_owner_id\] => (\d+)/);
             if (!idMatch) continue; 
             const playerId = idMatch[1].trim();
 
-            // Trova il nome (solo per visualizzazione)
             const nameMatch = block.match(/\[fleet_owner\] => (.*)/);
-            const playerName = nameMatch ? nameMatch[1].trim() : "Unknown";
+            const playerName = nameMatch ? nameMatch[1].trim() : "Sconosciuto";
 
-            // Salviamo il collegamento: Slot X appartiene all'ID Y
+            // Mappiamo lo slot all'ID reale
             slotToPlayerIdMap[slotId] = playerId;
 
-            // Se il giocatore (ID) non esiste ancora nella mappa, crealo
+            // Inizializza giocatore se nuovo
             if (!uniquePlayersMap[playerId]) {
                 uniquePlayersMap[playerId] = {
                     id: playerId,
-                    name: playerName, // Memorizza il nome del primo slot trovato
+                    name: playerName,
                     initialValue: 0,
                     lostValue: 0
                 };
             }
 
-            // Calcola il valore della flotta in QUESTO slot e aggiungilo al totale del giocatore
+            // Calcola valore flotta in questo slot (Met + Cris + Deut)
             let fleetVal = 0;
             const shipRegex = /\[ship_type\] => (\d+)\s*[^\[]*\[count\] => (\d+)/g;
             let match;
@@ -92,34 +90,59 @@ function parseRawData() {
                     fleetVal += (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
                 }
             }
+            // Somma al totale del giocatore unificato
             uniquePlayersMap[playerId].initialValue += fleetVal;
         }
 
-        // --- 2. CALCOLO PERDITE (AGGREGATE PER ID) ---
+        // --- 2. CALCOLO PERDITE (Metodo Migliorato) ---
         
-        const lossTag = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
-        const roundsSection = rawCR.split(/\[rounds\] => Array/)[1];
-        
-        if (roundsSection) {
-            // Divide per trovare i blocchi perdite
-            const lossBlocks = roundsSection.split(lossTag);
+        // Identifica la sezione rounds
+        const roundsSplit = rawCR.split(/\[rounds\] => Array/);
+        if (roundsSplit.length > 1) {
+            const roundsContent = roundsSplit[1];
             
-            // Dal secondo blocco in poi ci sono i dati
-            for(let k=1; k < lossBlocks.length; k++) {
-                // Prendi solo la parte relativa alle perdite di questo round
-                const lb = lossBlocks[k].split(/\[(attacker_ships|defender_ships|defender_ship_losses|attacker_ship_losses)\]/)[0];
+            // Definiamo cosa cercare (Attaccanti o Difensori)
+            const lossSectionTag = role === 'attacker' ? 'attacker_ship_losses' : 'defender_ship_losses';
+            
+            // Regex potente: Cerca dentro i blocchi losses
+            // Pattern: [owner] => X ... [ship_type] => Y ... [count] => Z
+            // Dobbiamo assicurarci di leggere SOLO le perdite del ruolo corretto.
+            
+            // Strategia: Iteriamo su tutti i blocchi [role_ship_losses] => Array
+            const lossesBlocks = roundsContent.split(`[${lossSectionTag}] => Array`);
+            
+            // Partiamo da 1 perché il primo elemento è roba prima del match
+            for (let k = 1; k < lossesBlocks.length; k++) {
+                // Prendiamo il contenuto fino alla fine dell'array corrente o inizio del prossimo tag
+                // Un modo semplice è prendere il testo e fermarsi se incontra parentesi di chiusura array troppo esterne o nuove keyword
+                // Ma per semplicità, usiamo una regex che cattura le righe di navi subito dopo.
                 
-                const lossRegex = /\[owner\] => (\d+)\s*\[ship_type\] => (\d+)\s*\[count\] => (\d+)/g;
-                let lMatch;
-                while ((lMatch = lossRegex.exec(lb)) !== null) {
-                    const ownerSlotId = parseInt(lMatch[1]); // Qui troviamo l'ID dello slot (es. 0, 1)
-                    const sId = parseInt(lMatch[2]);
-                    const count = parseInt(lMatch[3]);
+                const currentBlock = lossesBlocks[k];
+                
+                // Regex per estrarre le navi perse in questo blocco
+                // Cerca ripetutamente: [owner] => ID ... [ship_type] => ID ... [count] => NUM
+                const lineRegex = /\[owner\] => (\d+)\s*\[ship_type\] => (\d+)\s*\[count\] => (\d+)/g;
+                
+                let lineMatch;
+                while ((lineMatch = lineRegex.exec(currentBlock)) !== null) {
+                    // ATTENZIONE: Se il blocco contiene anche "defender_ships" o altro, la regex potrebbe matchare roba sbagliata
+                    // Per sicurezza, verifichiamo che la posizione del match non sia "troppo lontana" o in un'altra sottosezione
+                    // Nel formato RAW standard, le losses sono un array di oggetti.
+                    
+                    // Un controllo di sicurezza grezzo: se incontriamo una keyword che chiude la sezione losses
+                    const textUntilMatch = currentBlock.substring(0, lineMatch.index);
+                    if (textUntilMatch.includes('[attacker_ships]') || textUntilMatch.includes('[defender_ships]')) {
+                        // Siamo finiti in un'altra sezione del round, ignoriamo questo match e i successivi di questo blocco
+                        break;
+                    }
 
-                    // Recuperiamo l'ID GIOCATORE tramite la mappa slot->id
+                    const ownerSlotId = parseInt(lineMatch[1]);
+                    const sId = parseInt(lineMatch[2]);
+                    const count = parseInt(lineMatch[3]);
+
+                    // Risolvi ID Reale
                     const realPlayerId = slotToPlayerIdMap[ownerSlotId];
 
-                    // Aggiungiamo la perdita al giocatore corretto (aggregato)
                     if (realPlayerId && uniquePlayersMap[realPlayerId] && SHIPS[sId]) {
                         uniquePlayersMap[realPlayerId].lostValue += (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
                     }
@@ -127,7 +150,7 @@ function parseRawData() {
             }
         }
 
-        // --- 3. ESTRAZIONE RISORSE (RR o CR) ---
+        // --- 3. ESTRAZIONE RISORSE ---
         let totMet = 0, totCrys = 0, totDeut = 0;
 
         if (rawRR && rawRR.length > 20) {
@@ -140,24 +163,22 @@ function parseRawData() {
             totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
         }
 
-        // Aggiorna input UI
         document.getElementById('totalMetal').value = totMet;
         document.getElementById('totalCrystal').value = totCrys;
         document.getElementById('totalDeuterium').value = totDeut;
 
-        // Trasforma la mappa in array per i calcoli finali
         aggregatedPlayers = Object.values(uniquePlayersMap);
 
         if(aggregatedPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi OK: Trovati ${aggregatedPlayers.length} giocatori unici (Aggregati per ID).</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi OK: ${aggregatedPlayers.length} Giocatori Unificati.</span>`;
             calculateDistribution();
         } else {
-            throw new Error("Nessun giocatore trovato. Controlla il RAW.");
+            throw new Error("Nessun giocatore trovato. RAW non valido?");
         }
 
     } catch (e) {
         console.error(e);
-        statusDiv.innerHTML = `<span class="text-err">⚠️ ${e.message}</span>`;
+        statusDiv.innerHTML = `<span class="text-err">⚠️ Errore: ${e.message}</span>`;
     }
 }
 
@@ -192,12 +213,12 @@ function calculateDistribution() {
         <th>TOTALE</th>
     </tr></thead><tbody>`;
 
-    let txt = `--- 🚀 SPARTIZIONE CDR (${method.toUpperCase()}) ---\n`;
+    let txt = `--- 🚀 SPARTIZIONE CDR (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
     txt += `CDR Tot: ${fmt(totalCDR)} | Perdite: ${fmt(groupLoss)}\n`;
     txt += `Utile Netto: ${fmt(netProfit)}\n--------------------------\n`;
 
     aggregatedPlayers.forEach(p => {
-        // 1. Rimborso
+        // 1. Rimborso Perdite
         let reimbursement = 0;
         if (totalCDR >= groupLoss) {
             reimbursement = p.lostValue;
@@ -205,15 +226,19 @@ function calculateDistribution() {
             reimbursement = (p.lostValue / groupLoss) * totalCDR;
         }
 
-        // 2. Utile
+        // 2. Calcolo Utile
         let profitShare = 0;
         if (netProfit > 0) {
             if (method === 'equal') {
+                // Divisione Equa
                 profitShare = netProfit / aggregatedPlayers.length;
             } else {
-                // Weighted: basato sulla flotta iniziale TOTALE del giocatore
-                const share = p.initialValue / groupInitial;
-                profitShare = netProfit * share;
+                // Divisione Pesata
+                // La quota è proporzionale a quanta flotta (initialValue) il giocatore ha portato rispetto al totale (groupInitial)
+                if (groupInitial > 0) {
+                    const weight = p.initialValue / groupInitial;
+                    profitShare = netProfit * weight;
+                }
             }
         }
 
@@ -235,7 +260,7 @@ function calculateDistribution() {
 
     html += `</tbody></table>`;
     
-    if(aggregatedPlayers.length === 0) html = `<div style="text-align:center; padding:20px; color:#666;">Esegui l'analisi per vedere la tabella.</div>`;
+    if(aggregatedPlayers.length === 0) html = `<div style="text-align:center; padding:20px; color:#666;">Incolla il RAW e clicca su Elabora Dati.</div>`;
 
     document.getElementById('table-container').innerHTML = html;
     document.getElementById('copyText').innerText = txt;
