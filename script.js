@@ -42,36 +42,43 @@ function parseRawData() {
         // ==================================================
         // 1. CR: IDENTIFICAZIONE GIOCATORI E FLOTTA INIZIALE
         // ==================================================
-        const roleSectionRegex = role === 'attacker' ? /\[attackers\] => Array/ : /\[defenders\] => Array/;
-        const parts = rawCR.split(roleSectionRegex);
+        // Cerchiamo la sezione che ci interessa
+        const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
+        const parts = rawCR.split(roleStartTag);
         
         if (parts.length < 2) throw new Error(`Sezione ${role} non trovata nel CR.`);
         
-        // Prendiamo il blocco dell'array
-        const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] =>/)[0];
+        // Prendiamo il contenuto fino alla prossima sezione array principale
+        const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
 
-        // LOGICA FIX: Dividiamo per indici array [0], [1], [2]...
-        // Questo preserva l'ordine e il contenuto esatto di ogni giocatore.
+        // LOGICA MIGLIORATA: Usiamo Regex per catturare ogni blocco giocatore
+        // Formato: [0] => stdClass Object ( ... )
+        // Usiamo un loop per estrarre uno per uno gli slot
+        const playerBlockRegex = /\[(\d+)\] => stdClass Object\s*\(([\s\S]*?)\n\s{20}\)/g;
+        
+        let blockMatch;
+        // Se la regex complessa fallisce, usiamo lo split che è più rozzo ma efficace se calibrato
         const playerBlocks = sectionContent.split(/\[\d+\] => stdClass Object/);
 
-        // i=1 perché lo split genera un primo elemento vuoto o con roba precedente
+        // Ciclo su ogni blocco trovato (Slot)
         for (let i = 1; i < playerBlocks.length; i++) {
             const block = playerBlocks[i];
-            // L'indice dello slot è (i - 1)
-            const slotIndex = i - 1;
+            const slotIndex = i - 1; // Lo slot è l'indice sequenziale
 
-            // Ora cerchiamo ID e NOME dentro questo specifico blocco
+            // Estrazione ID
             const idMatch = block.match(/\[fleet_owner_id\] => (\d+)/);
-            if (!idMatch) continue; 
+            if (!idMatch) continue; // Salta blocchi vuoti
             
             const playerId = idMatch[1].trim();
+
+            // Estrazione Nome
             const nameMatch = block.match(/\[fleet_owner\] => (.*)/);
             const playerName = nameMatch ? nameMatch[1].trim() : `Player ${playerId}`;
 
-            // Mappatura cruciale: Slot X -> ID Y
+            // Mappatura Slot -> ID
             slotToPlayerIdMap[slotIndex] = playerId;
 
-            // Creazione/Recupero Giocatore
+            // Inizializza giocatore
             if (!uniquePlayersMap[playerId]) {
                 uniquePlayersMap[playerId] = {
                     id: playerId,
@@ -80,15 +87,9 @@ function parseRawData() {
                     lossM: 0, lossC: 0, lossD: 0,
                     harvestedValue: 0 
                 };
-            } else {
-                // Se il giocatore esisteva già (es. da RR o altro slot), aggiorniamo il nome se era generico
-                if (uniquePlayersMap[playerId].name.startsWith("Player")) {
-                    uniquePlayersMap[playerId].name = playerName;
-                }
             }
 
-            // Calcolo Flotta Iniziale di questo slot
-            // Usiamo la regex "ingorda" per saltare armature/scudi
+            // Calcolo Flotta Iniziale (Regex "ingorda" per saltare armature/scudi)
             const shipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
             let shipMatch;
             while ((shipMatch = shipRegex.exec(block)) !== null) {
@@ -104,23 +105,25 @@ function parseRawData() {
         // ==================================================
         // 2. CR: CALCOLO PERDITE (SCANNERIZZAZIONE GLOBALE)
         // ==================================================
+        // Identifichiamo la stringa target per le perdite
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
+        
+        // Spezziamo TUTTO il raw usando questa keyword
+        // Questo trova tutti i blocchi di perdite in tutti i round
         const globalLossBlocks = rawCR.split(lossKeyword);
 
+        // Iteriamo su tutti i blocchi trovati (dal secondo in poi)
         for (let k = 1; k < globalLossBlocks.length; k++) {
             let blockContent = globalLossBlocks[k];
             
-            // Pulizia: stop alle prossime keyword
-            const stopKeywords = ['[attacker_ships]', '[defender_ships]', '[statistics]', '[rounds]'];
-            let cutIndex = blockContent.length;
-            stopKeywords.forEach(word => {
-                const idx = blockContent.indexOf(word);
-                if (idx !== -1 && idx < cutIndex) cutIndex = idx;
-            });
-            blockContent = blockContent.substring(0, cutIndex);
+            // Dobbiamo fermare la lettura prima che inizi un'altra sezione importante
+            // La sezione successiva è tipicamente defender_ships o statistics o fine array
+            // Tagliamo alla prima occorrenza di '[' seguita da testo e ']'
+            const safeContent = blockContent.split(/\[(attacker_ships|defender_ships|statistics|rounds)\]/)[0];
 
-            // Analisi perdite
-            const lossObjects = blockContent.split('stdClass Object');
+            // Ora analizziamo le navi perse in questo frammento pulito
+            // Usiamo lo split per stdClass Object per isolare ogni riga di perdita
+            const lossObjects = safeContent.split('stdClass Object');
             
             for(let j=1; j < lossObjects.length; j++) {
                 const lObj = lossObjects[j];
@@ -134,7 +137,7 @@ function parseRawData() {
                     const sId = parseInt(typeMatch[1]);
                     const count = parseInt(countMatch[1]);
                     
-                    // Recuperiamo l'ID reale dallo slot
+                    // Risolviamo l'ID reale dallo slot
                     const realId = slotToPlayerIdMap[ownerSlotId];
                     
                     if (realId && uniquePlayersMap[realId] && SHIPS[sId]) {
@@ -175,7 +178,6 @@ function parseRawData() {
                 if (uniquePlayersMap[recId]) {
                     uniquePlayersMap[recId].harvestedValue += (m + c + d);
                 } else {
-                    // Riciclatore esterno o non partecipante al combat
                     const recName = nameMatch ? nameMatch[1].trim() : `Recycler ${recId}`;
                     uniquePlayersMap[recId] = {
                         id: recId,
@@ -187,6 +189,7 @@ function parseRawData() {
                 }
             }
         } else {
+            // Fallback CR
             totMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
             totCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
             totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
@@ -203,7 +206,7 @@ function parseRawData() {
         aggregatedPlayers = Object.values(uniquePlayersMap);
 
         if(aggregatedPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v0.7 OK: ${aggregatedPlayers.length} Giocatori.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v0.8 OK: ${aggregatedPlayers.length} Giocatori.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -248,7 +251,7 @@ function calculateDistribution() {
         <th>BILANCIO</th>
     </tr></thead><tbody>`;
 
-    let txt = `--- 🚀 BILANCIO CDR v0.7 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
+    let txt = `--- 🚀 BILANCIO CDR v0.8 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
     txt += `CDR Tot: ${fmt(totalCDR)} | Perdite Tot: ${fmt(groupLoss)}\n`;
     txt += `UTILE NETTO: ${fmt(netProfit)}\n--------------------------\n`;
 
