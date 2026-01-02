@@ -47,7 +47,7 @@ body {
 .main-title .highlight { color: var(--accent-color); font-weight: 900; }
 .subtitle { color: #8b949e; font-size: 0.9rem; margin-top: 5px; letter-spacing: 1px; }
 
-/* VERSIONE STYLE V0.3 */
+/* VERSIONE STYLE */
 .version-tag {
     display: block;
     margin-top: 5px;

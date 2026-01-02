@@ -33,13 +33,15 @@ function parseRawData() {
     const role = document.querySelector('input[name="role"]:checked').value; 
 
     aggregatedPlayers = [];
-    let uniquePlayersMap = {}; // KEY: ID_PLAYER
+    let uniquePlayersMap = {}; 
     let slotToPlayerIdMap = {}; 
     
     try {
         if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
-        // 1. IDENTIFICAZIONE GIOCATORI E FLOTTA INIZIALE
+        // ==================================================
+        // 1. CR: IDENTIFICAZIONE GIOCATORI E FLOTTA INIZIALE
+        // ==================================================
         const roleSectionRegex = role === 'attacker' ? /\[attackers\] => Array/ : /\[defenders\] => Array/;
         const parts = rawCR.split(roleSectionRegex);
         
@@ -66,14 +68,13 @@ function parseRawData() {
                     id: playerId,
                     name: playerName,
                     initialValue: 0,
-                    lossM: 0, // Metallo perso
-                    lossC: 0, // Cristallo perso
-                    lossD: 0, // Deuterio perso
+                    lossM: 0, lossC: 0, lossD: 0,
                     harvestedValue: 0 
                 };
             }
 
-            const shipRegex = /\[ship_type\] => (\d+)\s*[^\[]*\[count\] => (\d+)/g;
+            // REGEX FIX: [\s\S]*? scavalca armature, scudi e armi per trovare [count]
+            const shipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
             let shipMatch;
             while ((shipMatch = shipRegex.exec(slotBlock)) !== null) {
                 const sId = parseInt(shipMatch[1]);
@@ -85,7 +86,9 @@ function parseRawData() {
             }
         }
 
-        // 2. CALCOLO PERDITE (NAVIGANDO I ROUND E SOMMANDO M/C/D)
+        // ==================================================
+        // 2. CR: CALCOLO PERDITE (NAVIGANDO I ROUND)
+        // ==================================================
         const roundsSection = rawCR.split(/\[rounds\] => Array/)[1];
         if (roundsSection) {
             const roundBlocks = roundsSection.split(/\[\d+\] => stdClass Object/);
@@ -97,9 +100,11 @@ function parseRawData() {
                 
                 if (lossesSplit.length > 1) {
                     let lossesContent = lossesSplit[1];
+                    // Clean-up: ferma la lettura se incontra un'altra sezione
                     lossesContent = lossesContent.split(/\[[a-z_]+\] =>/)[0]; 
                     
-                    const lossRegex = /\[owner\] => (\d+)\s*\[ship_type\] => (\d+)\s*\[count\] => (\d+)/g;
+                    // REGEX FIX anche qui per le perdite
+                    const lossRegex = /\[owner\]\s*=>\s*(\d+)[\s\S]*?\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
                     let lMatch;
                     
                     while ((lMatch = lossRegex.exec(lossesContent)) !== null) {
@@ -110,7 +115,6 @@ function parseRawData() {
                         const realId = slotToPlayerIdMap[ownerSlotId];
                         
                         if (realId && uniquePlayersMap[realId] && SHIPS[sId]) {
-                            // Somma granulare delle perdite
                             uniquePlayersMap[realId].lossM += (SHIPS[sId].m * count);
                             uniquePlayersMap[realId].lossC += (SHIPS[sId].c * count);
                             uniquePlayersMap[realId].lossD += (SHIPS[sId].d * count);
@@ -120,8 +124,10 @@ function parseRawData() {
             }
         }
 
-        // 3. ESTRAZIONE RISORSE (MULTI-RECYCLE)
-        let totMet = 0, totCrys = 0, totDeut = 0;
+        // ==================================================
+        // 3. RR: PARSING RECYCLE REPORTS
+        // ==================================================
+        let globalMet = 0, globalCrys = 0, globalDeut = 0;
 
         if (rawRR && rawRR.length > 20) {
             const rrReports = rawRR.split(/\[generic\] => stdClass Object/);
@@ -135,7 +141,7 @@ function parseRawData() {
                 const c = extractRes(report, /\[(?:recycler_)?crystal_retrieved\] => (\d+)/);
                 const d = extractRes(report, /\[(?:recycler_)?deuterium_retrieved\] => (\d+)/);
 
-                totMet += m; totCrys += c; totDeut += d;
+                globalMet += m; globalCrys += c; globalDeut += d;
 
                 if (uniquePlayersMap[recId]) {
                     uniquePlayersMap[recId].harvestedValue += (m + c + d);
@@ -152,24 +158,24 @@ function parseRawData() {
                 }
             }
         } else {
-            // Fallback CR: Cerchiamo anche il deuterio
-            totMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
-            totCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
-            totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
+            // Fallback CR
+            globalMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
+            globalCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
+            globalDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
         }
 
-        document.getElementById('totalMetal').value = fmt(totMet);
-        document.getElementById('totalCrystal').value = fmt(totCrys);
-        document.getElementById('totalDeuterium').value = fmt(totDeut);
+        document.getElementById('totalMetal').value = fmt(globalMet);
+        document.getElementById('totalCrystal').value = fmt(globalCrys);
+        document.getElementById('totalDeuterium').value = fmt(globalDeut);
         
-        document.getElementById('totalMetal').dataset.val = totMet;
-        document.getElementById('totalCrystal').dataset.val = totCrys;
-        document.getElementById('totalDeuterium').dataset.val = totDeut;
+        document.getElementById('totalMetal').dataset.val = globalMet;
+        document.getElementById('totalCrystal').dataset.val = globalCrys;
+        document.getElementById('totalDeuterium').dataset.val = globalDeut;
 
         aggregatedPlayers = Object.values(uniquePlayersMap);
 
         if(aggregatedPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v0.3 OK: ${aggregatedPlayers.length} Giocatori. Perdite calcolate.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v0.4 OK: ${aggregatedPlayers.length} Giocatori.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -194,7 +200,6 @@ function calculateDistribution() {
     
     const totalCDR = totMet + totCrys + totDeut;
 
-    // Calcolo Totale Perdite Gruppo
     let groupLoss = 0;
     let groupInitial = 0;
 
@@ -204,7 +209,6 @@ function calculateDistribution() {
         groupInitial += p.initialValue;
     });
 
-    // Utile Netto = Ciò che abbiamo raccolto - Ciò che abbiamo perso in totale
     const netProfit = totalCDR - groupLoss;
 
     let html = `<table><thead><tr>
@@ -216,21 +220,18 @@ function calculateDistribution() {
         <th>BILANCIO</th>
     </tr></thead><tbody>`;
 
-    let txt = `--- 🚀 BILANCIO CDR v0.3 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
+    let txt = `--- 🚀 BILANCIO CDR v0.4 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
     txt += `CDR Tot: ${fmt(totalCDR)} | Perdite Tot: ${fmt(groupLoss)}\n`;
     txt += `UTILE NETTO: ${fmt(netProfit)}\n--------------------------\n`;
 
     aggregatedPlayers.forEach(p => {
-        // 1. Calcolo Rimborso (Copre le perdite se c'è abbastanza CDR)
         let reimbursement = 0;
         if (totalCDR >= groupLoss) {
             reimbursement = p.totalLoss;
         } else {
-            // Se siamo in perdita totale (CDR < Perdite), rimborsiamo in percentuale
             reimbursement = (groupLoss > 0) ? (p.totalLoss / groupLoss) * totalCDR : 0;
         }
 
-        // 2. Calcolo Utile (Solo se c'è profitto)
         let profitShare = 0;
         if (netProfit > 0) {
             if (method === 'equal') {
@@ -247,7 +248,7 @@ function calculateDistribution() {
         }
 
         const totalShare = reimbursement + profitShare;
-        const balance = totalShare - p.harvestedValue; // Positivo = Riceve, Negativo = Paga
+        const balance = totalShare - p.harvestedValue;
 
         let balanceClass = balance > 0 ? "pos" : (balance < 0 ? "neg" : "neut");
         let balanceText = balance > 0 ? `RICEVE: ${fmt(balance)}` : (balance < 0 ? `PAGA: ${fmt(Math.abs(balance))}` : "PARI");
