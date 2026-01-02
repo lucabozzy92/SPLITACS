@@ -1,20 +1,17 @@
-/* --- TRADUZIONI --- */
+/* --- TRANSLATIONS --- */
 const LANG_DATA = {
     it: {
-        sec_config: "1. Configurazione",
-        sec_input: "2. Inserimento Dati RAW",
-        api_note: "Incolla qui i dati grezzi dell'API OGame.",
-        btn_parse: "🚀 ELABORA DATI",
+        sec_input: "Inserimento Dati RAW",
+        btn_parse: "ELABORA DATI",
         lbl_role: "Ruolo:",
         opt_attacker: "Attaccanti",
         opt_defender: "Difensori",
         lbl_method: "Metodo:",
         opt_equal: "Equa",
         opt_weighted: "Pesata",
-        sec_dashboard: "3. Dashboard",
-        btn_recalc: "🔄 Ricalcola",
+        sec_dashboard: "Dashboard",
         lbl_report: "Report Testuale",
-        btn_copy: "Copia Report",
+        btn_copy: "COPIA REPORT",
         sum_cdr: "Totale CDR",
         sum_loss: "Perdite Flotta",
         sum_profit: "Utile Netto",
@@ -35,20 +32,17 @@ const LANG_DATA = {
         rep_spetta: "Spetta"
     },
     en: {
-        sec_config: "1. Configuration",
-        sec_input: "2. RAW Data Input",
-        api_note: "Paste OGame API raw data here.",
-        btn_parse: "🚀 PROCESS DATA",
+        sec_input: "RAW Data Input",
+        btn_parse: "PROCESS DATA",
         lbl_role: "Role:",
         opt_attacker: "Attackers",
         opt_defender: "Defenders",
         lbl_method: "Method:",
         opt_equal: "Equal",
         opt_weighted: "Weighted",
-        sec_dashboard: "3. Dashboard",
-        btn_recalc: "🔄 Recalculate",
+        sec_dashboard: "Dashboard",
         lbl_report: "Text Report",
-        btn_copy: "Copy Report",
+        btn_copy: "COPY REPORT",
         sum_cdr: "Total DF",
         sum_loss: "Fleet Losses",
         sum_profit: "Net Profit",
@@ -69,20 +63,17 @@ const LANG_DATA = {
         rep_spetta: "Due"
     },
     de: {
-        sec_config: "1. Konfiguration",
-        sec_input: "2. RAW Daten Eingabe",
-        api_note: "Fügen Sie hier die OGame API-Rohdaten ein.",
-        btn_parse: "🚀 DATEN VERARBEITEN",
+        sec_input: "RAW Daten Eingabe",
+        btn_parse: "DATEN VERARBEITEN",
         lbl_role: "Rolle:",
         opt_attacker: "Angreifer",
         opt_defender: "Verteidiger",
         lbl_method: "Methode:",
         opt_equal: "Gleich",
         opt_weighted: "Gewichtet",
-        sec_dashboard: "3. Dashboard",
-        btn_recalc: "🔄 Neu berechnen",
+        sec_dashboard: "Dashboard",
         lbl_report: "Textbericht",
-        btn_copy: "Bericht kopieren",
+        btn_copy: "BERICHT KOPIEREN",
         sum_cdr: "Gesamt TF",
         sum_loss: "Flottenverluste",
         sum_profit: "Reingewinn",
@@ -103,20 +94,17 @@ const LANG_DATA = {
         rep_spetta: "Anteil"
     },
     es: {
-        sec_config: "1. Configuración",
-        sec_input: "2. Entrada de Datos RAW",
-        api_note: "Pega aquí los datos brutos de la API de OGame.",
-        btn_parse: "🚀 PROCESAR DATOS",
+        sec_input: "Entrada Datos RAW",
+        btn_parse: "PROCESAR DATOS",
         lbl_role: "Rol:",
         opt_attacker: "Atacantes",
         opt_defender: "Defensores",
         lbl_method: "Método:",
         opt_equal: "Igualitaria",
         opt_weighted: "Ponderada",
-        sec_dashboard: "3. Panel de Balance",
-        btn_recalc: "🔄 Recalcular",
-        lbl_report: "Reporte de Texto",
-        btn_copy: "Copiar Reporte",
+        sec_dashboard: "Panel",
+        lbl_report: "Reporte Texto",
+        btn_copy: "COPIAR REPORTE",
         sum_cdr: "Total Escombros",
         sum_loss: "Pérdidas Flota",
         sum_profit: "Beneficio Neto",
@@ -137,20 +125,17 @@ const LANG_DATA = {
         rep_spetta: "Corresp."
     },
     fr: {
-        sec_config: "1. Configuration",
-        sec_input: "2. Saisie des Données RAW",
-        api_note: "Collez ici les données brutes de l'API OGame.",
-        btn_parse: "🚀 TRAITER LES DONNÉES",
+        sec_input: "Saisie Données RAW",
+        btn_parse: "TRAITER DONNÉES",
         lbl_role: "Rôle:",
         opt_attacker: "Attaquants",
         opt_defender: "Défenseurs",
         lbl_method: "Méthode:",
         opt_equal: "Équitable",
         opt_weighted: "Pondérée",
-        sec_dashboard: "3. Tableau de Bord",
-        btn_recalc: "🔄 Recalculer",
+        sec_dashboard: "Tableau de Bord",
         lbl_report: "Rapport Texte",
-        btn_copy: "Copier le Rapport",
+        btn_copy: "COPIER RAPPORT",
         sum_cdr: "Total CDR",
         sum_loss: "Pertes Flotte",
         sum_profit: "Bénéfice Net",
@@ -174,24 +159,16 @@ const LANG_DATA = {
 
 let currentLang = 'it';
 
-/* --- CONFIGURAZIONE COSTI NAVI (STANDARD OGAME) --- */
+/* SHIP COSTS */
 const SHIPS_COST = {
-    202: { m: 2000, c: 2000, d: 0 },
-    203: { m: 6000, c: 6000, d: 0 },
-    204: { m: 3000, c: 1000, d: 0 },
-    205: { m: 6000, c: 4000, d: 0 },
-    206: { m: 20000, c: 7000, d: 2000 },
-    207: { m: 45000, c: 15000, d: 0 },
-    208: { m: 10000, c: 20000, d: 10000 },
-    209: { m: 10000, c: 6000, d: 2000 },
-    210: { m: 0, c: 1000, d: 0 },
-    211: { m: 50000, c: 25000, d: 15000 },
-    212: { m: 0, c: 2000, d: 500 },
-    213: { m: 60000, c: 50000, d: 15000 },
-    214: { m: 5000000, c: 4000000, d: 1000000 },
-    215: { m: 30000, c: 40000, d: 15000 },
-    218: { m: 85000, c: 55000, d: 15000 },
-    219: { m: 8000, c: 15000, d: 8000 }
+    202: { m: 2000, c: 2000, d: 0 }, 203: { m: 6000, c: 6000, d: 0 },
+    204: { m: 3000, c: 1000, d: 0 }, 205: { m: 6000, c: 4000, d: 0 },
+    206: { m: 20000, c: 7000, d: 2000 }, 207: { m: 45000, c: 15000, d: 0 },
+    208: { m: 10000, c: 20000, d: 10000 }, 209: { m: 10000, c: 6000, d: 2000 },
+    210: { m: 0, c: 1000, d: 0 }, 211: { m: 50000, c: 25000, d: 15000 },
+    212: { m: 0, c: 2000, d: 500 }, 213: { m: 60000, c: 50000, d: 15000 },
+    214: { m: 5000000, c: 4000000, d: 1000000 }, 215: { m: 30000, c: 40000, d: 15000 },
+    218: { m: 85000, c: 55000, d: 15000 }, 219: { m: 8000, c: 15000, d: 8000 }
 };
 
 let playersList = []; 
@@ -200,24 +177,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-parse').addEventListener('click', parseRawData);
     document.getElementById('btn-recalc').addEventListener('click', calculateDistribution);
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
-    setLanguage('it'); // Default
+    setLanguage('it'); 
 });
 
 function setLanguage(lang) {
     currentLang = lang;
     const t = LANG_DATA[lang];
-    
-    // Update DOM
     document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.getAttribute('data-key');
         if (t[key]) el.innerText = t[key];
     });
-
-    // Update buttons active state
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
-
-    // Re-render if data exists
     if (playersList.length > 0) calculateDistribution();
 }
 
@@ -233,48 +204,36 @@ function parseRawData() {
     try {
         if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
-        // 1. CR: PARSING GIOCATORI CON ID BOUNDARY (Logica v2.0)
+        // 1. CR: PARSING PLAYERS
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
         const parts = rawCR.split(roleStartTag);
-        
         if (parts.length < 2) throw new Error(`Sezione ${role} non trovata nel CR.`);
         
         const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
-
         const idRegex = /\[fleet_owner_id\] => (\d+)/g;
         let idMatches = [];
         let match;
-        while ((match = idRegex.exec(sectionContent)) !== null) {
-            idMatches.push({ id: match[1], index: match.index });
-        }
+        while ((match = idRegex.exec(sectionContent)) !== null) idMatches.push({ id: match[1], index: match.index });
 
         for (let i = 0; i < idMatches.length; i++) {
             const currentMatch = idMatches[i];
             const nextMatch = idMatches[i+1];
             const pId = currentMatch.id;
-            
             const startIdx = currentMatch.index;
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
-
             const headerChunk = sectionContent.substring(Math.max(0, startIdx - 500), startIdx);
             const nameMatch = headerChunk.match(/\[fleet_owner\] => (.*)/);
             const pName = nameMatch ? nameMatch[1].trim() : `Player ${pId}`;
 
             playersList[i] = {
-                index: i,
-                id: pId,
-                name: pName,
-                initialValue: 0,
-                lossM: 0, lossC: 0, lossD: 0,
-                harvestedM: 0, harvestedC: 0, harvestedD: 0,
-                harvestedValue: 0,
-                dueM: 0, dueC: 0, dueD: 0,
-                weightPercentage: 0
+                index: i, id: pId, name: pName,
+                initialValue: 0, lossM: 0, lossC: 0, lossD: 0,
+                harvestedM: 0, harvestedC: 0, harvestedD: 0, harvestedValue: 0,
+                dueM: 0, dueC: 0, dueD: 0, weightPercentage: 0
             };
             playerIdToIndexMap[pId] = i;
 
-            // SCANSIONE FLOTTA
             const globalShipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
             let sMatch;
             while ((sMatch = globalShipRegex.exec(playerChunk)) !== null) {
@@ -287,7 +246,7 @@ function parseRawData() {
             }
         }
 
-        // 2. CR: CALCOLO PERDITE
+        // 2. CR: LOSSES
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
         const roundBlocks = rawCR.split('[round_number] =>');
 
@@ -297,20 +256,15 @@ function parseRawData() {
             if(lossSplit.length < 2) continue; 
 
             let lossContent = lossSplit[1];
-            if (role === 'attacker') {
-                lossContent = lossContent.split('[defender_ships]')[0];
-            } else {
-               lossContent = lossContent.split(/\[(attacker_ships|defender_ships|statistics)\]/)[0];
-            }
+            if (role === 'attacker') lossContent = lossContent.split('[defender_ships]')[0];
+            else lossContent = lossContent.split(/\[(attacker_ships|defender_ships|statistics)\]/)[0];
 
             const lossRegex = /\[owner\]\s*=>\s*(\d+)[\s\S]*?\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
             let lMatch;
-
             while ((lMatch = lossRegex.exec(lossContent)) !== null) {
                 const ownerIdx = parseInt(lMatch[1]);
                 const sId = parseInt(lMatch[2]);
                 const count = parseInt(lMatch[3]);
-
                 if (playersList[ownerIdx] && SHIPS_COST[sId]) {
                     playersList[ownerIdx].lossM += (SHIPS_COST[sId].m * count);
                     playersList[ownerIdx].lossC += (SHIPS_COST[sId].c * count);
@@ -319,9 +273,8 @@ function parseRawData() {
             }
         }
 
-        // 3. RR: ESTRAZIONE RISORSE
+        // 3. RR: HARVEST
         let totMet = 0, totCrys = 0, totDeut = 0;
-
         if (rawRR && rawRR.length > 20) {
             const rrReports = rawRR.split(/\[generic\] => stdClass Object/);
             for (let k = 1; k < rrReports.length; k++) {
@@ -333,11 +286,9 @@ function parseRawData() {
                 const m = extractRes(report, /\[(?:recycler_)?metal_retrieved\] => (\d+)/);
                 const c = extractRes(report, /\[(?:recycler_)?crystal_retrieved\] => (\d+)/);
                 const d = extractRes(report, /\[(?:recycler_)?deuterium_retrieved\] => (\d+)/);
-
                 totMet += m; totCrys += c; totDeut += d;
 
                 const pIndex = playerIdToIndexMap[recId];
-
                 if (pIndex !== undefined && playersList[pIndex]) {
                     playersList[pIndex].harvestedM += m;
                     playersList[pIndex].harvestedC += c;
@@ -348,15 +299,10 @@ function parseRawData() {
                     const recName = nameMatch ? nameMatch[1].trim() : `Recycler ${recId}`;
                     const newIdx = playersList.length;
                     playersList.push({
-                        index: newIdx,
-                        id: recId,
-                        name: recName + " (Ext)",
-                        initialValue: 0,
-                        lossM: 0, lossC: 0, lossD: 0,
-                        harvestedM: m, harvestedC: c, harvestedD: d,
-                        harvestedValue: (m + c + d),
-                        dueM: 0, dueC: 0, dueD: 0,
-                        weightPercentage: 0
+                        index: newIdx, id: recId, name: recName + " (Ext)",
+                        initialValue: 0, lossM: 0, lossC: 0, lossD: 0,
+                        harvestedM: m, harvestedC: c, harvestedD: d, harvestedValue: (m + c + d),
+                        dueM: 0, dueC: 0, dueD: 0, weightPercentage: 0
                     });
                     playerIdToIndexMap[recId] = newIdx;
                 }
@@ -367,23 +313,17 @@ function parseRawData() {
             totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
         }
 
-        document.getElementById('totalMetal').value = fmt(totMet);
-        document.getElementById('totalCrystal').value = fmt(totCrys);
-        document.getElementById('totalDeuterium').value = fmt(totDeut);
-        
         document.getElementById('totalMetal').dataset.val = totMet;
         document.getElementById('totalCrystal').dataset.val = totCrys;
         document.getElementById('totalDeuterium').dataset.val = totDeut;
 
         const validPlayers = playersList.filter(p => p !== undefined);
-
         if(validPlayers.length > 0) {
             statusDiv.innerHTML = `<span class="text-ok">✅ OK (${validPlayers.length} Players)</span>`;
             calculateDistribution();
         } else {
-            throw new Error("Nessun giocatore trovato.");
+            throw new Error("No players found.");
         }
-
     } catch (e) {
         console.error(e);
         statusDiv.innerHTML = `<span class="text-err">⚠️ Error: ${e.message}</span>`;
@@ -396,7 +336,7 @@ function extractRes(text, regex) {
 }
 
 function calculateDistribution() {
-    const tData = LANG_DATA[currentLang]; // Get current translations
+    const tData = LANG_DATA[currentLang];
     const totMet = parseFloat(document.getElementById('totalMetal').dataset.val) || 0;
     const totCrys = parseFloat(document.getElementById('totalCrystal').dataset.val) || 0;
     const totDeut = parseFloat(document.getElementById('totalDeuterium').dataset.val) || 0;
@@ -428,6 +368,7 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
+        // Reimbursement
         let rimbM = p.lossM;
         let rimbC = p.lossC;
         let rimbD = p.lossD;
@@ -438,17 +379,13 @@ function calculateDistribution() {
             netM = 0; netC = 0; netD = 0;
         }
 
+        // Profit Share
         let shareM = 0, shareC = 0, shareD = 0;
-        
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
-            shareM = netM / realParticipants;
-            shareC = netC / realParticipants;
-            shareD = netD / realParticipants;
+            shareM = netM / realParticipants; shareC = netC / realParticipants; shareD = netD / realParticipants;
         } else if (method === 'weighted' && groupInitial > 0 && p.initialValue > 0) {
             const weight = p.initialValue / groupInitial;
-            shareM = netM * weight;
-            shareC = netC * weight;
-            shareD = netD * weight;
+            shareM = netM * weight; shareC = netC * weight; shareD = netD * weight;
         }
 
         p.dueM = Math.floor(rimbM + shareM);
@@ -465,27 +402,20 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
+    // Summary
     summaryDiv.innerHTML = `
-        <div class="sum-item">
-            <span class="sum-label">${t.sum_cdr}</span>
-            <span class="sum-val" style="color:var(--accent-color)">${fmt(totalCDR)}</span>
-        </div>
-        <div class="sum-item">
-            <span class="sum-label">${t.sum_loss}</span>
-            <span class="sum-val" style="color:var(--danger-color)">${fmt(totalLoss)}</span>
-        </div>
-        <div class="sum-item">
-            <span class="sum-label">${t.sum_profit}</span>
-            <span class="sum-val" style="color:var(--success-color)">${fmt(totalProfit)}</span>
-        </div>
+        <div class="sum-item"><span class="sum-label">${t.sum_cdr}</span><span class="sum-val" style="color:var(--primary)">${fmt(totalCDR)}</span></div>
+        <div class="sum-item"><span class="sum-label">${t.sum_loss}</span><span class="sum-val" style="color:var(--danger)">${fmt(totalLoss)}</span></div>
+        <div class="sum-item"><span class="sum-label">${t.sum_profit}</span><span class="sum-val" style="color:var(--success)">${fmt(totalProfit)}</span></div>
     `;
 
+    // Cards
     let htmlCards = "";
     let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
         const balance = p.totalDue - p.harvestedValue;
-        let balanceClass = balance > 100 ? "status-receive" : (balance < -100 ? "status-pay" : "status-even");
+        let balanceClass = balance > 100 ? "status-rec" : (balance < -100 ? "status-pay" : "status-even");
         let balanceLabel = balance > 100 ? t.status_rec : (balance < -100 ? t.status_pay : t.status_even);
         const weightStr = p.weightPercentage.toFixed(2) + "%";
 
@@ -496,32 +426,20 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
                 <span class="status-badge ${balanceClass}">${balanceLabel}</span>
             </div>
             <div class="card-body">
-                <div class="data-row">
-                    <span class="d-label">${t.card_fleet}</span>
-                    <span class="d-val">${fmt(p.initialValue)}</span>
-                </div>
-                <div class="data-row">
-                    <span class="d-label">${t.card_weight}</span>
-                    <span class="d-val" style="color:var(--warning-color)">${weightStr}</span>
-                </div>
-                <div class="data-row">
-                    <span class="d-label">${t.card_loss}</span>
-                    <span class="d-val" style="color:var(--danger-color)">-${fmt(p.totalLoss)}</span>
-                </div>
-                <div class="data-row">
-                    <span class="d-label">${t.card_harvest}</span>
-                    <span class="d-val" style="color:var(--accent-color)">${fmt(p.harvestedValue)}</span>
-                </div>
+                <div class="data-row"><span class="d-label">${t.card_fleet}</span><span class="d-val">${fmt(p.initialValue)}</span></div>
+                <div class="data-row"><span class="d-label">${t.card_weight}</span><span class="d-val" style="color:var(--warning)">${weightStr}</span></div>
+                <div class="data-row"><span class="d-label">${t.card_loss}</span><span class="d-val" style="color:var(--danger)">-${fmt(p.totalLoss)}</span></div>
+                <div class="data-row"><span class="d-label">${t.card_harvest}</span><span class="d-val" style="color:var(--primary)">${fmt(p.harvestedValue)}</span></div>
                 <div class="res-breakdown">
                     <div style="text-align:center; margin-bottom:5px; color:#fff; font-weight:bold;">${t.card_due}</div>
-                    <div class="res-row"><span class="res-label c-met">M</span> <span>${fmt(p.dueM)}</span></div>
-                    <div class="res-row"><span class="res-label c-crys">C</span> <span>${fmt(p.dueC)}</span></div>
-                    <div class="res-row"><span class="res-label c-deut">D</span> <span>${fmt(p.dueD)}</span></div>
+                    <div class="res-row"><span class="c-met">M</span> <span>${fmt(p.dueM)}</span></div>
+                    <div class="res-row"><span class="c-crys">C</span> <span>${fmt(p.dueC)}</span></div>
+                    <div class="res-row"><span class="c-deut">D</span> <span>${fmt(p.dueD)}</span></div>
                 </div>
             </div>
             <div class="card-footer">
-                <span class="d-label">${t.card_bal}:</span><br>
-                <span class="balance-val ${balance > 0 ? 'text-ok' : 'text-err'}">${balance > 0 ? '+' : ''}${fmt(balance)}</span>
+                <span class="d-label" style="font-size:0.8rem">${t.card_bal}:</span><br>
+                <span class="bal-val ${balance > 0 ? 'text-ok' : (balance < 0 ? 'text-err' : '')}">${balance > 0 ? '+' : ''}${fmt(balance)}</span>
             </div>
         </div>`;
 
@@ -529,59 +447,52 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
         txtReport += `  ${t.rep_spetta}: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
         txtReport += `  ${t.card_bal}: ${balance > 0 ? t.status_rec + ' ' + fmt(balance) : t.status_pay + ' ' + fmt(Math.abs(balance))}\n\n`;
     });
-
     cardsContainer.innerHTML = htmlCards;
 
+    // Transport
     const transportHTML = generateTransportPlanHTML(players, t);
     transportContainer.innerHTML = transportHTML;
-    
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = transportHTML.replace(/<div class="trade-route"/g, "\n>").replace(/<\/div>/g, "").replace(/<[^>]+>/g, " ");
-    txtReport += `--- ✈️ ${t.rep_flight} ---\n${tempDiv.innerText}`;
+    txtReport += `\n--- ✈️ ${t.rep_flight} ---\n${tempDiv.innerText}`;
 
     document.getElementById('copyText').innerText = txtReport;
 }
 
 function generateTransportPlanHTML(players, t) {
     let html = "";
-    const solve = (resName, propHarvested, propDue, cssClass) => {
-        let senders = [];
-        let receivers = [];
+    const solve = (resName, propHarvested, propDue, cssClass, iconClass) => {
+        let senders = [], receivers = [];
         players.forEach(p => {
             const diff = p[propHarvested] - p[propDue];
             if (diff > 100) senders.push({ name: p.name, amount: diff });
             else if (diff < -100) receivers.push({ name: p.name, amount: -diff });
         });
-
         if (senders.length === 0) return "";
 
-        let block = `<div class="transport-block"><div class="trans-title"><i class="fas fa-cube"></i> ${resName}</div>`;
+        let block = `<div class="transport-block"><div class="trans-title"><i class="fas ${iconClass}"></i> ${resName}</div>`;
         senders.forEach(sender => {
             while (sender.amount > 1) {
                 if (receivers.length === 0) break;
                 let receiver = receivers[0];
                 let amt = Math.min(sender.amount, receiver.amount);
-                
-                block += `<div class="trade-route ${cssClass}"><span class="route-from">${sender.name}</span> <span class="route-arrow">${t.trans_send}</span> <span class="route-amount">${fmt(amt)}</span> <span class="route-arrow">${t.trans_to}</span> <span class="route-to">${receiver.name}</span></div>`;
-                sender.amount -= amt;
-                receiver.amount -= amt;
+                block += `<div class="trade-route ${cssClass}"><span class="r-name">${sender.name}</span> <span class="r-arr">${t.trans_send}</span> <span class="r-amt">${fmt(amt)}</span> <span class="r-arr">${t.trans_to}</span> <span class="r-name">${receiver.name}</span></div>`;
+                sender.amount -= amt; receiver.amount -= amt;
                 if (receiver.amount < 1) receivers.shift();
             }
         });
         return block + "</div>";
     };
 
-    html += solve("Metal", "harvestedM", "dueM", "route-met");
-    html += solve("Crystal", "harvestedC", "dueC", "route-crys");
-    html += solve("Deuterio", "harvestedD", "dueD", "route-deut");
+    html += solve("Metal", "harvestedM", "dueM", "route-met", "fa-cube");
+    html += solve("Crystal", "harvestedC", "dueC", "route-crys", "fa-gem");
+    html += solve("Deuterium", "harvestedD", "dueD", "route-deut", "fa-flask");
 
-    if(html === "") return `<div class="transport-block" style="text-align:center; color:#238636">${t.trans_none}</div>`;
+    if(html === "") return `<div class="transport-block" style="text-align:center; color:var(--success); border-color:var(--success)">${t.trans_none}</div>`;
     return html;
 }
 
-function fmt(n) {
-    return new Intl.NumberFormat('it-IT').format(Math.floor(n));
-}
+function fmt(n) { return new Intl.NumberFormat('it-IT').format(Math.floor(n)); }
 
 function copyToClipboard() {
     const text = document.getElementById('copyText').innerText;

@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OGame ACS Splitter</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<div class="background-overlay"></div>
 
 <div class="container">
     <div class="lang-bar">
@@ -18,81 +21,82 @@
         <button class="lang-btn" onclick="setLanguage('fr')">FR</button>
     </div>
 
-    <div class="logo-container">
-        <h1 class="main-title">
-            OGame <span class="highlight">ACS</span> SPLIT 
-        </h1>
-        <span class="version-tag">V2.2</span>
+    <div class="header-section">
+        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V2.3</span></h1>
     </div>
 
-    <div class="section config-section compact-box">
-        <h3 data-key="sec_config">1. Configurazione</h3>
-        
-        <div class="config-row">
+    <div class="glass-panel config-bar">
+        <div class="step-badge">1</div>
+        <div class="config-content">
             <div class="config-group">
-                <span class="label" data-key="lbl_role">Ruolo:</span>
-                <div class="toggle-group">
-                    <label>
-                        <input type="radio" name="role" value="attacker" checked> <span data-key="opt_attacker">Attaccanti</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="role" value="defender"> <span data-key="opt_defender">Difensori</span>
-                    </label>
+                <span class="c-label" data-key="lbl_role"><i class="fas fa-user-tag"></i> Ruolo:</span>
+                <div class="toggle-switch">
+                    <input type="radio" id="role_att" name="role" value="attacker" checked>
+                    <label for="role_att" data-key="opt_attacker">Attaccanti</label>
+                    <input type="radio" id="role_def" name="role" value="defender">
+                    <label for="role_def" data-key="opt_defender">Difensori</label>
                 </div>
             </div>
+            
+            <div class="v-sep"></div>
 
-            <div class="vr"></div> <div class="config-group">
-                <span class="label" data-key="lbl_method">Metodo:</span>
-                <div class="toggle-group">
-                    <label>
-                        <input type="radio" name="method" value="equal" checked> <span data-key="opt_equal">Equa</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="method" value="weighted"> <span data-key="opt_weighted">Pesata</span>
-                    </label>
+            <div class="config-group">
+                <span class="c-label" data-key="lbl_method"><i class="fas fa-balance-scale"></i> Metodo:</span>
+                <div class="toggle-switch">
+                    <input type="radio" id="met_eq" name="method" value="equal" checked>
+                    <label for="met_eq" data-key="opt_equal">Equa</label>
+                    <input type="radio" id="met_wei" name="method" value="weighted">
+                    <label for="met_wei" data-key="opt_weighted">Pesata</label>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="section">
-        <h3 data-key="sec_input">2. Inserimento Dati RAW</h3>
-        <p class="api-note" data-key="api_note">Incolla qui i dati grezzi dell'API OGame.</p>
+    <div class="glass-panel input-section">
+        <div class="panel-head">
+            <div class="step-badge">2</div>
+            <h3 data-key="sec_input">Inserimento Dati RAW</h3>
+        </div>
         
-        <div class="raw-input-container">
-            <div class="input-wrapper">
-                <label>Combat Report (CR)</label>
-                <textarea id="raw-cr" placeholder="..."></textarea>
+        <div class="input-grid">
+            <div class="input-box">
+                <div class="box-label"><i class="fas fa-fighter-jet"></i> Combat Report (CR)</div>
+                <textarea id="raw-cr" placeholder="API..."></textarea>
             </div>
-            <div class="input-wrapper">
-                <label>Recycle Report (RR)</label>
-                <textarea id="raw-rr" placeholder="..."></textarea>
+            <div class="input-box">
+                <div class="box-label"><i class="fas fa-recycle"></i> Recycle Report (RR)</div>
+                <textarea id="raw-rr" placeholder="API..."></textarea>
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse" data-key="btn_parse">🚀 ELABORA DATI</button>
+        <button class="btn-main" id="btn-parse">
+            <span data-key="btn_parse">ELABORA DATI</span> <i class="fas fa-rocket"></i>
+        </button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
-    <div class="section res-met" style="display:none;">
-        <input type="hidden" id="totalMetal">
-        <input type="hidden" id="totalCrystal">
-        <input type="hidden" id="totalDeuterium">
+    <div style="display:none;">
+        <input type="hidden" id="totalMetal"><input type="hidden" id="totalCrystal"><input type="hidden" id="totalDeuterium">
     </div>
 
-    <div class="section">
-        <div class="header-row">
-            <h3 data-key="sec_dashboard">3. Dashboard</h3>
-            <button class="btn-secondary btn-small" id="btn-recalc" data-key="btn_recalc">🔄 Ricalcola</button>
+    <div class="glass-panel dashboard-section">
+        <div class="panel-head">
+            <div class="step-badge">3</div>
+            <div class="head-flex">
+                <h3 data-key="sec_dashboard">Dashboard</h3>
+                <button class="btn-icon" id="btn-recalc" title="Ricalcola"><i class="fas fa-sync-alt"></i></button>
+            </div>
         </div>
 
-        <div id="global-summary" class="summary-card"></div>
+        <div id="global-summary" class="summary-strip"></div>
         <div id="transport-container"></div>
         <div id="cards-container" class="cards-grid"></div>
 
-        <h4 style="margin-top: 30px;" data-key="lbl_report">Report Testuale</h4>
-        <div class="result-box" id="copyText">...</div>
-        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy" data-key="btn_copy">Copia</button>
+        <div class="report-area">
+            <div class="box-label"><i class="fas fa-file-alt"></i> <span data-key="lbl_report">Report Testuale</span></div>
+            <div class="result-box" id="copyText">...</div>
+            <button class="btn-copy" id="btn-copy" data-key="btn_copy">COPIA REPORT</button>
+        </div>
     </div>
 </div>
 
