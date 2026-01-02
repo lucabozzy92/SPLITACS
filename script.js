@@ -1,20 +1,21 @@
-/* --- CONFIGURAZIONE COSTI NAVI (Standard OGame) --- */
+/* --- CONFIGURAZIONE COSTI NAVI (M, C, D) --- */
+/* Mappatura corretta standard OGame */
 const SHIPS = {
-    202: { m: 3000, c: 1000, d: 0, name: "Caccia Leggero" },
-    203: { m: 6000, c: 4000, d: 0, name: "Caccia Pesante" },
-    204: { m: 20000, c: 7000, d: 2000, name: "Incrociatore" },
-    205: { m: 45000, c: 15000, d: 0, name: "Nave da Battaglia" },
-    206: { m: 10000, c: 20000, d: 10000, name: "Colony Ship" }, 
-    207: { m: 10000, c: 6000, d: 2000, name: "Riciclatrice" },
-    208: { m: 0, c: 1000, d: 0, name: "Sonda Spia" },
-    209: { m: 50000, c: 25000, d: 15000, name: "Bombardiere" },
-    210: { m: 0, c: 2000, d: 500, name: "Satellite Solare" },
-    211: { m: 60000, c: 50000, d: 15000, name: "Corazzata" },
-    212: { m: 5000000, c: 4000000, d: 1000000, name: "Morte Nera" },
-    213: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
-    214: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }, // Vecchio slot se presente
+    202: { m: 2000, c: 2000, d: 0, name: "Cargo Leggero" },
+    203: { m: 6000, c: 6000, d: 0, name: "Cargo Pesante" },
+    204: { m: 3000, c: 1000, d: 0, name: "Caccia Leggero" },
+    205: { m: 6000, c: 4000, d: 0, name: "Caccia Pesante" },
+    206: { m: 20000, c: 7000, d: 2000, name: "Incrociatore" },
+    207: { m: 45000, c: 15000, d: 0, name: "Nave da Battaglia" },
+    208: { m: 10000, c: 20000, d: 10000, name: "Colonizzatrice" },
+    209: { m: 10000, c: 6000, d: 2000, name: "Riciclatrice" },
+    210: { m: 0, c: 1000, d: 0, name: "Sonda Spia" },
+    211: { m: 50000, c: 25000, d: 15000, name: "Bombardiere" },
+    212: { m: 0, c: 2000, d: 500, name: "Satellite Solare" },
+    213: { m: 60000, c: 50000, d: 15000, name: "Corazzata" }, // Destroyer
+    214: { m: 5000000, c: 4000000, d: 1000000, name: "Morte Nera" },
     215: { m: 30000, c: 40000, d: 15000, name: "Incrociatore da Battaglia" },
-    218: { m: 2000, c: 2000, d: 1000, name: "Crawler" },
+    218: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
     219: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }
 };
 
@@ -39,7 +40,7 @@ function parseRawData() {
         if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
         // ==================================================
-        // 1. CR: PARSING GIOCATORI (Mapping Indice 0, 1, 2...)
+        // 1. CR: PARSING GIOCATORI
         // ==================================================
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
         const parts = rawCR.split(roleStartTag);
@@ -65,7 +66,6 @@ function parseRawData() {
             const pIndex = parseInt(indexStr);
             if(pIndex > maxIndex) maxIndex = pIndex;
 
-            // Inizializza Oggetto Giocatore
             playersList[pIndex] = {
                 index: pIndex,
                 id: pId,
@@ -95,7 +95,7 @@ function parseRawData() {
         }
 
         // ==================================================
-        // 2. CR: CALCOLO PERDITE (SCANNERIZZAZIONE ROUND)
+        // 2. CR: CALCOLO PERDITE
         // ==================================================
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
         const roundBlocks = rawCR.split('[round_number] =>');
@@ -120,7 +120,6 @@ function parseRawData() {
                 const sId = parseInt(lMatch[2]);
                 const count = parseInt(lMatch[3]);
 
-                // Calcolo Dettagliato M/C/D
                 if (playersList[ownerIdx] && SHIPS[sId]) {
                     playersList[ownerIdx].lossM += (SHIPS[sId].m * count);
                     playersList[ownerIdx].lossC += (SHIPS[sId].c * count);
@@ -155,6 +154,7 @@ function parseRawData() {
                 } else {
                     const nameMatch = report.match(/\[owner_name\] => (.*)/);
                     const recName = nameMatch ? nameMatch[1].trim() : `Recycler ${recId}`;
+                    
                     const newIdx = playersList.length;
                     playersList.push({
                         index: newIdx,
@@ -168,6 +168,7 @@ function parseRawData() {
                 }
             }
         } else {
+            // Fallback CR Totals
             totMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
             totCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
             totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
@@ -184,7 +185,7 @@ function parseRawData() {
         const validPlayers = playersList.filter(p => p !== undefined);
 
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Trovati ${validPlayers.length} Giocatori. Dettaglio perdite calcolato.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Trovati ${validPlayers.length} Giocatori.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -234,7 +235,7 @@ function calculateDistribution() {
         <th>BILANCIO</th>
     </tr></thead><tbody>`;
 
-    let txt = `--- 🚀 BILANCIO CDR v1.2 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
+    let txt = `--- 🚀 BILANCIO CDR v1.3 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
     txt += `CDR Tot: ${fmt(totalCDR)} | Perdite Tot: ${fmt(groupLoss)}\n`;
     txt += `UTILE NETTO: ${fmt(netProfit)}\n--------------------------\n`;
 
