@@ -1,8 +1,7 @@
-/* --- TRANSLATIONS --- */
 const LANG_DATA = {
     it: {
         sec_input: "Inserimento Dati RAW",
-        btn_parse: "ELABORA DATI",
+        btn_parse: "AVVIA SPARTIZIONE",
         lbl_role: "Ruolo:",
         opt_attacker: "Attaccanti",
         opt_defender: "Difensori",
@@ -20,7 +19,7 @@ const LANG_DATA = {
         card_loss: "Perdite Tot.",
         card_harvest: "Raccolto",
         card_due: "Spetta (Dettaglio)",
-        card_bal: "Bilancio Totale",
+        card_bal: "Guadagno Reale", // Changed from "Bilancio Totale" to be explicit
         status_rec: "RICEVE",
         status_pay: "PAGA",
         status_even: "PARI",
@@ -33,7 +32,7 @@ const LANG_DATA = {
     },
     en: {
         sec_input: "RAW Data Input",
-        btn_parse: "PROCESS DATA",
+        btn_parse: "START SPLIT",
         lbl_role: "Role:",
         opt_attacker: "Attackers",
         opt_defender: "Defenders",
@@ -51,7 +50,7 @@ const LANG_DATA = {
         card_loss: "Tot. Losses",
         card_harvest: "Harvested",
         card_due: "Due (Detail)",
-        card_bal: "Total Balance",
+        card_bal: "Net Profit",
         status_rec: "RECEIVES",
         status_pay: "PAYS",
         status_even: "EVEN",
@@ -64,7 +63,7 @@ const LANG_DATA = {
     },
     de: {
         sec_input: "RAW Daten Eingabe",
-        btn_parse: "DATEN VERARBEITEN",
+        btn_parse: "VERARBEITUNG STARTEN",
         lbl_role: "Rolle:",
         opt_attacker: "Angreifer",
         opt_defender: "Verteidiger",
@@ -82,7 +81,7 @@ const LANG_DATA = {
         card_loss: "Verluste",
         card_harvest: "Abgebaut",
         card_due: "Anteil (Detail)",
-        card_bal: "Gesamtbilanz",
+        card_bal: "Reingewinn",
         status_rec: "BEKOMMT",
         status_pay: "ZAHLT",
         status_even: "AUSGEGLICHEN",
@@ -95,7 +94,7 @@ const LANG_DATA = {
     },
     es: {
         sec_input: "Entrada Datos RAW",
-        btn_parse: "PROCESAR DATOS",
+        btn_parse: "INICIAR REPARTO",
         lbl_role: "Rol:",
         opt_attacker: "Atacantes",
         opt_defender: "Defensores",
@@ -113,7 +112,7 @@ const LANG_DATA = {
         card_loss: "Pérdidas Tot.",
         card_harvest: "Recolectado",
         card_due: "Corresponde",
-        card_bal: "Balance Total",
+        card_bal: "Ganancia Neta",
         status_rec: "RECIBE",
         status_pay: "PAGA",
         status_even: "PAREJO",
@@ -126,7 +125,7 @@ const LANG_DATA = {
     },
     fr: {
         sec_input: "Saisie Données RAW",
-        btn_parse: "TRAITER DONNÉES",
+        btn_parse: "LANCER RÉPARTITION",
         lbl_role: "Rôle:",
         opt_attacker: "Attaquants",
         opt_defender: "Défenseurs",
@@ -144,7 +143,7 @@ const LANG_DATA = {
         card_loss: "Pertes Tot.",
         card_harvest: "Récolté",
         card_due: "Dû (Détail)",
-        card_bal: "Bilan Total",
+        card_bal: "Gain Réel",
         status_rec: "REÇOIT",
         status_pay: "PAIE",
         status_even: "ÉGAL",
@@ -159,7 +158,6 @@ const LANG_DATA = {
 
 let currentLang = 'it';
 
-/* SHIP COSTS */
 const SHIPS_COST = {
     202: { m: 2000, c: 2000, d: 0 }, 203: { m: 6000, c: 6000, d: 0 },
     204: { m: 3000, c: 1000, d: 0 }, 205: { m: 6000, c: 4000, d: 0 },
@@ -175,9 +173,16 @@ let playersList = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-parse').addEventListener('click', parseRawData);
-    document.getElementById('btn-recalc').addEventListener('click', calculateDistribution);
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
     setLanguage('it'); 
+
+    // LIVE RECALC LISTENERS
+    const configInputs = document.querySelectorAll('input[name="method"], input[name="role"]');
+    configInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            if(playersList.length > 0) calculateDistribution();
+        });
+    });
 });
 
 function setLanguage(lang) {
@@ -195,7 +200,6 @@ function setLanguage(lang) {
 function parseRawData() {
     const rawCR = document.getElementById('raw-cr').value;
     const rawRR = document.getElementById('raw-rr').value;
-    const statusDiv = document.getElementById('parse-status');
     const role = document.querySelector('input[name="role"]:checked').value; 
 
     playersList = []; 
@@ -204,10 +208,10 @@ function parseRawData() {
     try {
         if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
-        // 1. CR: PARSING PLAYERS
+        // 1. CR: PLAYERS
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
         const parts = rawCR.split(roleStartTag);
-        if (parts.length < 2) throw new Error(`Sezione ${role} non trovata nel CR.`);
+        if (parts.length < 2) throw new Error(`Sezione ${role} non trovata.`);
         
         const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
         const idRegex = /\[fleet_owner_id\] => (\d+)/g;
@@ -219,6 +223,7 @@ function parseRawData() {
             const currentMatch = idMatches[i];
             const nextMatch = idMatches[i+1];
             const pId = currentMatch.id;
+            
             const startIdx = currentMatch.index;
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
@@ -319,14 +324,13 @@ function parseRawData() {
 
         const validPlayers = playersList.filter(p => p !== undefined);
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ OK (${validPlayers.length} Players)</span>`;
             calculateDistribution();
         } else {
             throw new Error("No players found.");
         }
     } catch (e) {
         console.error(e);
-        statusDiv.innerHTML = `<span class="text-err">⚠️ Error: ${e.message}</span>`;
+        // Error handling silent or console only as requested to remove "OK 3 players"
     }
 }
 
@@ -414,9 +418,13 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
-        const balance = p.totalDue - p.harvestedValue;
-        let balanceClass = balance > 100 ? "status-rec" : (balance < -100 ? "status-pay" : "status-even");
-        let balanceLabel = balance > 100 ? t.status_rec : (balance < -100 ? t.status_pay : t.status_even);
+        // --- LOGIC CHANGE: Balance is now NET PROFIT ---
+        const transportBalance = p.totalDue - p.harvestedValue;
+        const netProfit = p.totalDue - p.totalLoss;
+        
+        let balanceClass = transportBalance > 100 ? "status-rec" : (transportBalance < -100 ? "status-pay" : "status-even");
+        let balanceLabel = transportBalance > 100 ? t.status_rec : (transportBalance < -100 ? t.status_pay : t.status_even);
+        
         const weightStr = p.weightPercentage.toFixed(2) + "%";
 
         htmlCards += `
@@ -438,14 +446,16 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
                 </div>
             </div>
             <div class="card-footer">
-                <span class="d-label" style="font-size:0.8rem">${t.card_bal}:</span><br>
-                <span class="bal-val ${balance > 0 ? 'text-ok' : (balance < 0 ? 'text-err' : '')}">${balance > 0 ? '+' : ''}${fmt(balance)}</span>
+                <span class="bal-label">${t.card_bal}:</span><br>
+                <span class="bal-val ${netProfit > 0 ? 'text-ok' : 'text-err'}">${netProfit > 0 ? '+' : ''}${fmt(netProfit)}</span>
             </div>
         </div>`;
 
+        // Report Text
         txtReport += `> ${p.name} (${t.card_weight}: ${weightStr})\n`;
         txtReport += `  ${t.rep_spetta}: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
-        txtReport += `  ${t.card_bal}: ${balance > 0 ? t.status_rec + ' ' + fmt(balance) : t.status_pay + ' ' + fmt(Math.abs(balance))}\n\n`;
+        txtReport += `  ${t.card_bal}: ${netProfit > 0 ? '+' + fmt(netProfit) : fmt(netProfit)}\n`;
+        txtReport += `  [${transportBalance > 0 ? t.status_rec + ' ' + fmt(transportBalance) : t.status_pay + ' ' + fmt(Math.abs(transportBalance))}]\n\n`;
     });
     cardsContainer.innerHTML = htmlCards;
 

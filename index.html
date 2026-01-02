@@ -22,7 +22,7 @@
     </div>
 
     <div class="header-section">
-        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V2.4</span></h1>
+        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V2.5</span></h1>
     </div>
 
     <div class="glass-panel config-bar">
@@ -70,9 +70,9 @@
         </div>
 
         <button class="btn-main" id="btn-parse">
-            <span data-key="btn_parse">ELABORA DATI</span> <i class="fas fa-rocket"></i>
+            <span data-key="btn_parse">AVVIA SPARTIZIONE</span> <i class="fas fa-rocket"></i>
         </button>
-        <div id="parse-status" class="status-msg"></div>
+        <div id="parse-status" class="status-msg" style="display:none"></div>
     </div>
 
     <div style="display:none;">
@@ -84,20 +84,23 @@
             <div class="step-badge">3</div>
             <div class="head-flex">
                 <h3 data-key="sec_dashboard">Dashboard</h3>
-                <button class="btn-icon" id="btn-recalc" title="Ricalcola"><i class="fas fa-sync-alt"></i></button>
             </div>
         </div>
 
         <div id="global-summary" class="summary-strip"></div>
         
-        <div id="transport-container" class="transport-grid"></div>
-
         <div id="cards-container" class="cards-grid"></div>
 
-        <div class="report-area">
-            <div class="box-label"><i class="fas fa-file-alt"></i> <span data-key="lbl_report">Report Testuale</span></div>
-            <div class="result-box" id="copyText">...</div>
-            <button class="btn-copy" id="btn-copy" data-key="btn_copy">COPIA REPORT</button>
+        <div class="split-layout">
+            <div class="split-col">
+                <div class="box-label"><i class="fas fa-shuttle-space"></i> Piano Trasporti</div>
+                <div id="transport-container" class="transport-grid"></div>
+            </div>
+            <div class="split-col">
+                <div class="box-label"><i class="fas fa-file-alt"></i> <span data-key="lbl_report">Report Testuale</span></div>
+                <div class="result-box" id="copyText">...</div>
+                <button class="btn-copy" id="btn-copy" data-key="btn_copy">COPIA REPORT</button>
+            </div>
         </div>
     </div>
 </div>
