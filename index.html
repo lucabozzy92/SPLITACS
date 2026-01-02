@@ -22,13 +22,42 @@
         <h1 class="main-title">
             OGame <span class="highlight">ACS</span> SPLIT 
         </h1>
-        <span class="version-tag">Version 2.1 (Multi-Lang)</span>
-        <div class="subtitle" data-key="subtitle">Supporto ACS Massivi & Analisi ID</div>
+        <span class="version-tag">V2.2</span>
+    </div>
+
+    <div class="section config-section compact-box">
+        <h3 data-key="sec_config">1. Configurazione</h3>
+        
+        <div class="config-row">
+            <div class="config-group">
+                <span class="label" data-key="lbl_role">Ruolo:</span>
+                <div class="toggle-group">
+                    <label>
+                        <input type="radio" name="role" value="attacker" checked> <span data-key="opt_attacker">Attaccanti</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="role" value="defender"> <span data-key="opt_defender">Difensori</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="vr"></div> <div class="config-group">
+                <span class="label" data-key="lbl_method">Metodo:</span>
+                <div class="toggle-group">
+                    <label>
+                        <input type="radio" name="method" value="equal" checked> <span data-key="opt_equal">Equa</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="method" value="weighted"> <span data-key="opt_weighted">Pesata</span>
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="section">
-        <h3 data-key="sec_input">1. Inserimento Dati RAW</h3>
-        <p class="api-note" data-key="api_note">Incolla qui i dati API.</p>
+        <h3 data-key="sec_input">2. Inserimento Dati RAW</h3>
+        <p class="api-note" data-key="api_note">Incolla qui i dati grezzi dell'API OGame.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -45,36 +74,6 @@
         <div id="parse-status" class="status-msg"></div>
     </div>
 
-    <div class="section config-section">
-        <h3 data-key="sec_config">2. Configurazione</h3>
-        
-        <div class="config-row">
-            <div class="config-group">
-                <span class="label" data-key="lbl_role">Ruolo:</span>
-                <div class="toggle-group">
-                    <label>
-                        <input type="radio" name="role" value="attacker" checked> <span data-key="opt_attacker">Attaccanti</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="role" value="defender"> <span data-key="opt_defender">Difensori</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="config-group">
-                <span class="label" data-key="lbl_method">Metodo Divisione:</span>
-                <div class="toggle-group">
-                    <label>
-                        <input type="radio" name="method" value="equal" checked> <span data-key="opt_equal">Equa</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="method" value="weighted"> <span data-key="opt_weighted">Pesata</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="section res-met" style="display:none;">
         <input type="hidden" id="totalMetal">
         <input type="hidden" id="totalCrystal">
@@ -83,7 +82,7 @@
 
     <div class="section">
         <div class="header-row">
-            <h3 data-key="sec_dashboard">4. Dashboard</h3>
+            <h3 data-key="sec_dashboard">3. Dashboard</h3>
             <button class="btn-secondary btn-small" id="btn-recalc" data-key="btn_recalc">🔄 Ricalcola</button>
         </div>
 

@@ -46,35 +46,39 @@ body {
     background: #21262d;
     border: 1px solid var(--border-color);
     color: #8b949e;
-    padding: 5px 10px;
+    padding: 4px 8px;
     font-size: 0.75rem;
     cursor: pointer;
     border-radius: 4px;
     width: auto;
+    font-weight: bold;
 }
 .lang-btn:hover { color: white; border-color: #8b949e; }
 .lang-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
 
 /* Header & Logo */
-.logo-container { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-top: 20px;}
+.logo-container { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-top: 10px;}
 .main-title { font-size: 2rem; margin: 0; text-transform: uppercase; color: white; display: inline-block; }
 .main-title .highlight { color: var(--accent-color); font-weight: 900; }
-.subtitle { color: #8b949e; font-size: 0.9rem; margin-top: 5px; letter-spacing: 1px; }
-.version-tag { display: block; margin-top: 5px; font-size: 0.75rem; color: var(--warning-color); font-family: monospace; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
+.version-tag { display: inline-block; margin-left: 10px; font-size: 0.8rem; color: var(--warning-color); font-family: monospace; font-weight: bold; vertical-align: middle;}
 
-h3 { color: var(--accent-color); border-left: 3px solid var(--accent-color); padding-left: 10px; margin: 0 0 15px 0; }
-.section { margin-bottom: 25px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid #21262d; }
+h3 { color: var(--accent-color); border-left: 3px solid var(--accent-color); padding-left: 10px; margin: 0 0 15px 0; font-size: 1.1rem; }
+.section { margin-bottom: 20px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid #21262d; }
+
+/* Config Compact */
+.compact-box { padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
+.compact-box h3 { margin: 0; border: none; padding: 0; font-size: 1rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; width: 100%; border-bottom: 1px solid #30363d; padding-bottom: 5px; margin-bottom: 10px;} 
+.config-section { background: rgba(88, 166, 255, 0.04); border-color: rgba(88, 166, 255, 0.2); }
+.config-row { display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center;}
+.toggle-group { display: flex; gap: 15px; }
+.toggle-group label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: normal; margin: 0; font-size: 0.9em;}
+.vr { width: 1px; height: 20px; background: #30363d; }
 
 .raw-input-container { display: flex; gap: 15px; margin-bottom: 15px; }
 .input-wrapper { flex: 1; }
-textarea { width: 100%; min-height: 100px; padding: 10px; background: #010409; border: 1px solid var(--border-color); color: #8b949e; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 0.8rem; resize: vertical; }
+textarea { width: 100%; min-height: 80px; padding: 10px; background: #010409; border: 1px solid var(--border-color); color: #8b949e; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 0.8rem; resize: vertical; }
 textarea:focus { outline: none; border-color: var(--accent-color); color: #e6edf3; }
 label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #e6edf3; }
-
-.config-section { background: rgba(88, 166, 255, 0.04); border-color: rgba(88, 166, 255, 0.2); }
-.config-row { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
-.toggle-group { display: flex; gap: 15px; }
-.toggle-group label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: normal; margin-right: 15px; }
 
 button { cursor: pointer; padding: 12px; border: none; border-radius: 6px; font-weight: bold; color: white; text-transform: uppercase; transition: all 0.2s; width: 100%; }
 button:hover { filter: brightness(1.1); transform: translateY(-1px); }

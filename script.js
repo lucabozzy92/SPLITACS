@@ -1,28 +1,23 @@
 /* --- TRADUZIONI --- */
 const LANG_DATA = {
     it: {
-        subtitle: "Analisi Perdite e Piano di Volo SAC",
-        sec_input: "1. Inserimento Dati RAW",
+        sec_config: "1. Configurazione",
+        sec_input: "2. Inserimento Dati RAW",
         api_note: "Incolla qui i dati grezzi dell'API OGame.",
         btn_parse: "🚀 ELABORA DATI",
-        sec_config: "2. Configurazione",
         lbl_role: "Ruolo:",
         opt_attacker: "Attaccanti",
         opt_defender: "Difensori",
-        lbl_method: "Metodo Divisione:",
+        lbl_method: "Metodo:",
         opt_equal: "Equa",
         opt_weighted: "Pesata",
-        sec_dashboard: "4. Dashboard Bilancio",
+        sec_dashboard: "3. Dashboard",
         btn_recalc: "🔄 Ricalcola",
-        lbl_report: "Report Testuale (Copia/Incolla)",
+        lbl_report: "Report Testuale",
         btn_copy: "Copia Report",
-        
-        // Dashboard
         sum_cdr: "Totale CDR",
         sum_loss: "Perdite Flotta",
         sum_profit: "Utile Netto",
-        
-        // Cards
         card_fleet: "Flotta Iniz.",
         card_weight: "% Peso Flotta",
         card_loss: "Perdite Tot.",
@@ -32,32 +27,27 @@ const LANG_DATA = {
         status_rec: "RICEVE",
         status_pay: "PAGA",
         status_even: "PARI",
-        
-        // Transport
         trans_send: "invia",
         trans_to: "a",
         trans_none: "✅ Nessun trasporto necessario!",
-        
-        // Report
         rep_title: "SPARTIZIONE CDR",
         rep_flight: "PIANO DI VOLO",
         rep_spetta: "Spetta"
     },
     en: {
-        subtitle: "ACS Loss Analysis & Transport Plan",
-        sec_input: "1. RAW Data Input",
+        sec_config: "1. Configuration",
+        sec_input: "2. RAW Data Input",
         api_note: "Paste OGame API raw data here.",
         btn_parse: "🚀 PROCESS DATA",
-        sec_config: "2. Configuration",
         lbl_role: "Role:",
         opt_attacker: "Attackers",
         opt_defender: "Defenders",
-        lbl_method: "Split Method:",
+        lbl_method: "Method:",
         opt_equal: "Equal",
         opt_weighted: "Weighted",
-        sec_dashboard: "4. Balance Dashboard",
+        sec_dashboard: "3. Dashboard",
         btn_recalc: "🔄 Recalculate",
-        lbl_report: "Text Report (Copy/Paste)",
+        lbl_report: "Text Report",
         btn_copy: "Copy Report",
         sum_cdr: "Total DF",
         sum_loss: "Fleet Losses",
@@ -79,18 +69,17 @@ const LANG_DATA = {
         rep_spetta: "Due"
     },
     de: {
-        subtitle: "AKS Verlustanalyse & Transportplan",
-        sec_input: "1. RAW Daten Eingabe",
+        sec_config: "1. Konfiguration",
+        sec_input: "2. RAW Daten Eingabe",
         api_note: "Fügen Sie hier die OGame API-Rohdaten ein.",
         btn_parse: "🚀 DATEN VERARBEITEN",
-        sec_config: "2. Konfiguration",
         lbl_role: "Rolle:",
         opt_attacker: "Angreifer",
         opt_defender: "Verteidiger",
-        lbl_method: "Aufteilung:",
+        lbl_method: "Methode:",
         opt_equal: "Gleich",
         opt_weighted: "Gewichtet",
-        sec_dashboard: "4. Bilanz Dashboard",
+        sec_dashboard: "3. Dashboard",
         btn_recalc: "🔄 Neu berechnen",
         lbl_report: "Textbericht",
         btn_copy: "Bericht kopieren",
@@ -114,18 +103,17 @@ const LANG_DATA = {
         rep_spetta: "Anteil"
     },
     es: {
-        subtitle: "Análisis de Pérdidas SAC y Plan de Vuelo",
-        sec_input: "1. Entrada de Datos RAW",
+        sec_config: "1. Configuración",
+        sec_input: "2. Entrada de Datos RAW",
         api_note: "Pega aquí los datos brutos de la API de OGame.",
         btn_parse: "🚀 PROCESAR DATOS",
-        sec_config: "2. Configuración",
         lbl_role: "Rol:",
         opt_attacker: "Atacantes",
         opt_defender: "Defensores",
         lbl_method: "Método:",
         opt_equal: "Igualitaria",
         opt_weighted: "Ponderada",
-        sec_dashboard: "4. Panel de Balance",
+        sec_dashboard: "3. Panel de Balance",
         btn_recalc: "🔄 Recalcular",
         lbl_report: "Reporte de Texto",
         btn_copy: "Copiar Reporte",
@@ -149,18 +137,17 @@ const LANG_DATA = {
         rep_spetta: "Corresp."
     },
     fr: {
-        subtitle: "Analyse des Pertes AG et Plan de Vol",
-        sec_input: "1. Saisie des Données RAW",
+        sec_config: "1. Configuration",
+        sec_input: "2. Saisie des Données RAW",
         api_note: "Collez ici les données brutes de l'API OGame.",
         btn_parse: "🚀 TRAITER LES DONNÉES",
-        sec_config: "2. Configuration",
         lbl_role: "Rôle:",
         opt_attacker: "Attaquants",
         opt_defender: "Défenseurs",
         lbl_method: "Méthode:",
         opt_equal: "Équitable",
         opt_weighted: "Pondérée",
-        sec_dashboard: "4. Tableau de Bord",
+        sec_dashboard: "3. Tableau de Bord",
         btn_recalc: "🔄 Recalculer",
         lbl_report: "Rapport Texte",
         btn_copy: "Copier le Rapport",
@@ -187,7 +174,7 @@ const LANG_DATA = {
 
 let currentLang = 'it';
 
-/* Costi standard per calcoli */
+/* --- CONFIGURAZIONE COSTI NAVI (STANDARD OGAME) --- */
 const SHIPS_COST = {
     202: { m: 2000, c: 2000, d: 0 },
     203: { m: 6000, c: 6000, d: 0 },
@@ -586,7 +573,7 @@ function generateTransportPlanHTML(players, t) {
 
     html += solve("Metal", "harvestedM", "dueM", "route-met");
     html += solve("Crystal", "harvestedC", "dueC", "route-crys");
-    html += solve("Deuterium", "harvestedD", "dueD", "route-deut");
+    html += solve("Deuterio", "harvestedD", "dueD", "route-deut");
 
     if(html === "") return `<div class="transport-block" style="text-align:center; color:#238636">${t.trans_none}</div>`;
     return html;
