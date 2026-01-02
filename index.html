@@ -13,13 +13,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 0.4 (Stable Fix)</span>
-        <div class="subtitle">Analizzatore CR & RR con Regex Potenziata</div>
+        <span class="version-tag">Versione 0.5 (Deep Parser)</span>
+        <div class="subtitle">Analizzatore CR & RR con scansione a blocchi</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati grezzi. Il sistema ora legge correttamente armature, scudi e slot multipli.</p>
+        <p class="api-note">Incolla qui i dati grezzi. Il sistema leggerà flotte, tecnologie e perdite complesse.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA BILANCIO v0.4</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA BILANCIO v0.5</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        <p class="small-info">Il calcolo rimborsa prima le perdite (Met+Cris+Deut) e poi divide l'utile rimanente.</p>
+        <p class="small-info">Il calcolo rimborsa prima le perdite totali e poi divide l'utile rimanente.</p>
     </div>
 
     <div class="section res-met">
