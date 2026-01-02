@@ -13,13 +13,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 1.2 (Detail View)</span>
-        <div class="subtitle">Analisi con dettaglio perdite M/C/D</div>
+        <span class="version-tag">Versione 1.4 (Full ID Linking)</span>
+        <div class="subtitle">Analisi Perdite e Raccolto tramite ID Univoco</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema analizzerà le perdite risorsa per risorsa.</p>
+        <p class="api-note">Incolla qui i dati. Il sistema collega CR e RR usando l'ID Giocatore.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA v1.2</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA v1.4</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        <p class="small-info">Vengono rimborsate le perdite specifiche prima di dividere l'utile.</p>
+        <p class="small-info">Il calcolo rimborsa prima le perdite totali (M+C+D) e poi divide l'utile rimanente.</p>
     </div>
 
     <div class="section res-met">
@@ -92,7 +92,7 @@
         </div>
         <div id="table-container" class="table-responsive"></div>
 
-        <h4>Report Testuale</h4>
+        <h4>Report Testuale (con dettaglio M/C/D)</h4>
         <div class="result-box" id="copyText">In attesa di dati...</div>
         <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
     </div>

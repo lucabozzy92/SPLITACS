@@ -1,5 +1,4 @@
-/* --- CONFIGURAZIONE COSTI NAVI (M, C, D) --- */
-/* Mappatura corretta standard OGame */
+/* --- CONFIGURAZIONE COSTI NAVI (STANDARD OGAME) --- */
 const SHIPS = {
     202: { m: 2000, c: 2000, d: 0, name: "Cargo Leggero" },
     203: { m: 6000, c: 6000, d: 0, name: "Cargo Pesante" },
@@ -12,7 +11,7 @@ const SHIPS = {
     210: { m: 0, c: 1000, d: 0, name: "Sonda Spia" },
     211: { m: 50000, c: 25000, d: 15000, name: "Bombardiere" },
     212: { m: 0, c: 2000, d: 500, name: "Satellite Solare" },
-    213: { m: 60000, c: 50000, d: 15000, name: "Corazzata" }, // Destroyer
+    213: { m: 60000, c: 50000, d: 15000, name: "Corazzata" },
     214: { m: 5000000, c: 4000000, d: 1000000, name: "Morte Nera" },
     215: { m: 30000, c: 40000, d: 15000, name: "Incrociatore da Battaglia" },
     218: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
@@ -72,6 +71,7 @@ function parseRawData() {
                 name: pName,
                 initialValue: 0,
                 lossM: 0, lossC: 0, lossD: 0,
+                harvestedM: 0, harvestedC: 0, harvestedD: 0,
                 harvestedValue: 0 
             };
             
@@ -129,7 +129,7 @@ function parseRawData() {
         }
 
         // ==================================================
-        // 3. RR: ESTRAZIONE RISORSE
+        // 3. RR: ESTRAZIONE RISORSE E ASSEGNAZIONE PER ID
         // ==================================================
         let totMet = 0, totCrys = 0, totDeut = 0;
 
@@ -150,8 +150,13 @@ function parseRawData() {
                 const pIndex = playerIdToIndexMap[recId];
 
                 if (pIndex !== undefined && playersList[pIndex]) {
+                    // Trovato nella lista partecipanti: assegna le risorse
+                    playersList[pIndex].harvestedM += m;
+                    playersList[pIndex].harvestedC += c;
+                    playersList[pIndex].harvestedD += d;
                     playersList[pIndex].harvestedValue += (m + c + d);
                 } else {
+                    // Partecipante esterno
                     const nameMatch = report.match(/\[owner_name\] => (.*)/);
                     const recName = nameMatch ? nameMatch[1].trim() : `Recycler ${recId}`;
                     
@@ -162,6 +167,7 @@ function parseRawData() {
                         name: recName + " (Esterno)",
                         initialValue: 0,
                         lossM: 0, lossC: 0, lossD: 0,
+                        harvestedM: m, harvestedC: c, harvestedD: d,
                         harvestedValue: (m + c + d)
                     });
                     playerIdToIndexMap[recId] = newIdx;
@@ -185,7 +191,7 @@ function parseRawData() {
         const validPlayers = playersList.filter(p => p !== undefined);
 
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Trovati ${validPlayers.length} Giocatori.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Trovati ${validPlayers.length} Giocatori. Dettaglio perdite calcolato.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -230,12 +236,12 @@ function calculateDistribution() {
         <th class="c-crys">Perso Cris</th>
         <th class="c-deut">Perso Deut</th>
         <th>Perdite Tot</th>
-        <th>Raccolto</th>
+        <th>Raccolto (Tot)</th>
         <th>Spetta</th>
         <th>BILANCIO</th>
     </tr></thead><tbody>`;
 
-    let txt = `--- 🚀 BILANCIO CDR v1.3 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
+    let txt = `--- 🚀 BILANCIO CDR v1.4 (${method === 'equal' ? 'EQUA' : 'PESATA'}) ---\n`;
     txt += `CDR Tot: ${fmt(totalCDR)} | Perdite Tot: ${fmt(groupLoss)}\n`;
     txt += `UTILE NETTO: ${fmt(netProfit)}\n--------------------------\n`;
 
@@ -282,7 +288,7 @@ function calculateDistribution() {
 
         txt += `> ${p.name}\n`;
         txt += `  Perdite: M:${fmt(p.lossM)} C:${fmt(p.lossC)} D:${fmt(p.lossD)} (Tot: ${fmt(p.totalLoss)})\n`;
-        txt += `  Raccolto: ${fmt(p.harvestedValue)}\n`;
+        txt += `  Raccolto: ${fmt(p.harvestedValue)} (M:${fmt(p.harvestedM)} C:${fmt(p.harvestedC)} D:${fmt(p.harvestedD)})\n`;
         txt += `  Spetta: ${fmt(totalShare)} (Rimb+Utile)\n`;
         txt += `  -> ${balanceText}\n\n`;
     });
