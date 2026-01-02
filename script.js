@@ -71,22 +71,55 @@ function parseRawData() {
                 lossM: 0, lossC: 0, lossD: 0,
                 harvestedM: 0, harvestedC: 0, harvestedD: 0,
                 harvestedValue: 0,
-                dueM: 0, dueC: 0, dueD: 0
+                dueM: 0, dueC: 0, dueD: 0,
+                weightPercentage: 0
             };
             
             playerIdToIndexMap[pId] = pIndex;
 
-            const compositionSplit = content.split('[fleet_composition] => Array');
-            if (compositionSplit.length > 1) {
-                const compositionPart = compositionSplit[1].split('[lifeformBonuses]')[0];
-                const shipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
-                let shipMatch;
-                while ((shipMatch = shipRegex.exec(compositionPart)) !== null) {
-                    const sId = parseInt(shipMatch[1]);
-                    const count = parseInt(shipMatch[2]);
-                    if (SHIPS[sId]) {
-                        const val = (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
-                        playersList[pIndex].initialValue += val;
+            // FIX FLOTTA INIZIALE: Tagliamo in modo più robusto
+            // Cerchiamo [fleet_composition] => Array e prendiamo tutto il contenuto fino a un tag di chiusura o nuova sezione
+            const compositionMatch = content.match(/\[fleet_composition\] => Array\s*\(([\s\S]*?)\n\s{20}\)/);
+            
+            if (compositionMatch) {
+                const compositionPart = compositionMatch[1];
+                
+                // Dividiamo per stdClass Object per essere sicuri
+                const shipObjects = compositionPart.split('stdClass Object');
+                
+                for(let s=1; s < shipObjects.length; s++) {
+                    const sObj = shipObjects[s];
+                    const shipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/;
+                    const sMatch = sObj.match(shipRegex);
+                    
+                    if (sMatch) {
+                        const sId = parseInt(sMatch[1]);
+                        const count = parseInt(sMatch[2]);
+                        if (SHIPS[sId]) {
+                            const val = (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
+                            playersList[pIndex].initialValue += val;
+                        }
+                    }
+                }
+            } else {
+                // Fallback nel caso la regex sopra fallisca (es. parentesi diverse)
+                // Usiamo il metodo vecchio ma con start/end più larghi
+                const startComp = content.indexOf('[fleet_composition] => Array');
+                if (startComp !== -1) {
+                    let subContent = content.substring(startComp);
+                    // Fermati a lifeformBonuses se c'è, altrimenti alla fine
+                    const endComp = subContent.indexOf('[lifeformBonuses]');
+                    if(endComp !== -1) subContent = subContent.substring(0, endComp);
+                    
+                    const shipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
+                    let sMatch;
+                    while ((sMatch = shipRegex.exec(subContent)) !== null) {
+                        const sId = parseInt(sMatch[1]);
+                        const count = parseInt(sMatch[2]);
+                        if (SHIPS[sId]) {
+                            const val = (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
+                            playersList[pIndex].initialValue += val;
+                        }
                     }
                 }
             }
@@ -160,7 +193,8 @@ function parseRawData() {
                         lossM: 0, lossC: 0, lossD: 0,
                         harvestedM: m, harvestedC: c, harvestedD: d,
                         harvestedValue: (m + c + d),
-                        dueM: 0, dueC: 0, dueD: 0
+                        dueM: 0, dueC: 0, dueD: 0,
+                        weightPercentage: 0
                     });
                     playerIdToIndexMap[recId] = newIdx;
                 }
@@ -182,7 +216,7 @@ function parseRawData() {
         const validPlayers = playersList.filter(p => p !== undefined);
 
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v1.6 OK.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v1.7 OK.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -205,10 +239,10 @@ function calculateDistribution() {
     const totDeut = parseFloat(document.getElementById('totalDeuterium').dataset.val) || 0;
     const method = document.querySelector('input[name="method"]:checked').value;
     
-    const totalCDR = totMet + totCrys + totDeut;
-
+    // Totali
     let groupLoss = 0;
     let groupInitial = 0;
+    let totalLossM = 0, totalLossC = 0, totalLossD = 0;
 
     const activeList = playersList.filter(p => p);
 
@@ -216,18 +250,17 @@ function calculateDistribution() {
         p.totalLoss = p.lossM + p.lossC + p.lossD;
         groupLoss += p.totalLoss;
         groupInitial += p.initialValue;
+        totalLossM += p.lossM;
+        totalLossC += p.lossC;
+        totalLossD += p.lossD;
     });
 
-    // Utile Netto per Risorsa
-    const profitM = Math.max(0, totMet - groupLoss); // Semplificazione totale per ora
-    // Per essere precisi al 100% su M/C/D bisogna calcolare profitM = totMet - sum(lossM)
-    // Ma in OGame spesso il CDR copre le perdite totali ma non quelle specifiche se sbilanciate.
-    // Usiamo l'approccio standard: Rimborso esatto + Utile residuo totale diviso M/C/D
-    
-    // Calcolo preciso per risorsa
-    let totalLossM = 0, totalLossC = 0, totalLossD = 0;
-    activeList.forEach(p => { totalLossM += p.lossM; totalLossC += p.lossC; totalLossD += p.lossD; });
+    // Calcolo Percentuale Peso
+    activeList.forEach(p => {
+        p.weightPercentage = groupInitial > 0 ? (p.initialValue / groupInitial) * 100 : 0;
+    });
 
+    // Utile Netto
     let netM = Math.max(0, totMet - totalLossM);
     let netC = Math.max(0, totCrys - totalLossC);
     let netD = Math.max(0, totDeut - totalLossD);
@@ -235,16 +268,11 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
-        // 1. Rimborso (Se CDR < Perdita, riduci proporzionalmente)
-        // Per semplicità, assumiamo che se c'è utile totale, si rimborsa tutto
-        // Se si vuole precisione sulla risorsa carente, servirebbe logica più complessa.
-        // Qui assumiamo che il CDR sia misto e convertibile o sufficiente.
-        
+        // 1. Rimborso
         let rimbM = p.lossM;
         let rimbC = p.lossC;
         let rimbD = p.lossD;
 
-        // Se CDR Totale < Perdite Totali, scaliamo i rimborsi
         if ((totMet+totCrys+totDeut) < (totalLossM+totalLossC+totalLossD)) {
             const ratio = (totMet+totCrys+totDeut) / (totalLossM+totalLossC+totalLossD);
             rimbM *= ratio; rimbC *= ratio; rimbD *= ratio;
@@ -279,7 +307,6 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
-    // 1. Riepilogo Globale
     summaryDiv.innerHTML = `
         <div class="sum-item">
             <span class="sum-label">Totale CDR</span>
@@ -295,15 +322,17 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
         </div>
     `;
 
-    // 2. Generazione Cards
     let htmlCards = "";
-    let txtReport = `--- 📊 SPARTIZIONE CDR (${method.toUpperCase()}) ---\nCDR Tot: ${fmt(totalCDR)} | Utile: ${fmt(totalProfit)}\n--------------------------------\n`;
+    let txtReport = `--- 📊 SPARTIZIONE CDR (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
         const balance = p.totalDue - p.harvestedValue;
         let balanceClass = balance > 100 ? "status-receive" : (balance < -100 ? "status-pay" : "status-even");
         let balanceLabel = balance > 100 ? "RICEVE" : (balance < -100 ? "PAGA" : "PARI");
         
+        // Formatta la percentuale peso
+        const weightStr = p.weightPercentage.toFixed(2) + "%";
+
         htmlCards += `
         <div class="player-card">
             <div class="card-header">
@@ -316,7 +345,11 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
                     <span class="d-val">${fmt(p.initialValue)}</span>
                 </div>
                 <div class="data-row">
-                    <span class="d-label">Perdite</span>
+                    <span class="d-label">% Peso Flotta</span>
+                    <span class="d-val" style="color:var(--warning-color)">${weightStr}</span>
+                </div>
+                <div class="data-row">
+                    <span class="d-label">Perdite Tot.</span>
                     <span class="d-val" style="color:var(--danger-color)">-${fmt(p.totalLoss)}</span>
                 </div>
                 <div class="data-row">
@@ -337,7 +370,7 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
             </div>
         </div>`;
 
-        txtReport += `> ${p.name}\n`;
+        txtReport += `> ${p.name} (Peso: ${weightStr})\n`;
         txtReport += `  Spetta: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
         txtReport += `  Raccolto: ${fmt(p.harvestedValue)}\n`;
         txtReport += `  BILANCIO: ${balance > 0 ? 'RICEVE ' + fmt(balance) : 'PAGA ' + fmt(Math.abs(balance))}\n\n`;
@@ -345,11 +378,9 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
 
     cardsContainer.innerHTML = htmlCards;
 
-    // 3. Piano Trasporti
     const transportHTML = generateTransportPlanHTML(players);
     transportContainer.innerHTML = transportHTML;
     
-    // Aggiungi piano trasporti al testo
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = transportHTML.replace(/<div class="trade-route"/g, "\n>").replace(/<\/div>/g, "").replace(/<[^>]+>/g, " ");
     txtReport += `--- ✈️ PIANO DI VOLO ---\n${tempDiv.innerText}`;
@@ -359,7 +390,6 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
 
 function generateTransportPlanHTML(players) {
     let html = "";
-    
     const solve = (resName, propHarvested, propDue, cssClass) => {
         let senders = [];
         let receivers = [];
@@ -372,22 +402,13 @@ function generateTransportPlanHTML(players) {
         if (senders.length === 0) return "";
 
         let block = `<div class="transport-block"><div class="trans-title"><i class="fas fa-cube"></i> ${resName}</div>`;
-        
         senders.forEach(sender => {
             while (sender.amount > 1) {
                 if (receivers.length === 0) break;
                 let receiver = receivers[0];
                 let amt = Math.min(sender.amount, receiver.amount);
                 
-                block += `
-                <div class="trade-route ${cssClass}">
-                    <span class="route-from">${sender.name}</span>
-                    <span class="route-arrow">invia</span>
-                    <span class="route-amount">${fmt(amt)}</span>
-                    <span class="route-arrow">a</span>
-                    <span class="route-to">${receiver.name}</span>
-                </div>`;
-                
+                block += `<div class="trade-route ${cssClass}"><span class="route-from">${sender.name}</span> <span class="route-arrow">invia</span> <span class="route-amount">${fmt(amt)}</span> <span class="route-arrow">a</span> <span class="route-to">${receiver.name}</span></div>`;
                 sender.amount -= amt;
                 receiver.amount -= amt;
                 if (receiver.amount < 1) receivers.shift();
