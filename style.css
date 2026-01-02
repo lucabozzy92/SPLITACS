@@ -10,7 +10,7 @@
     --success-color: #238636;
     --danger-color: #da3633;
     --warning-color: #d29922;
-    --title-font: 'Segoe UI', sans-serif;
+    --title-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
