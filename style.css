@@ -10,7 +10,7 @@
     --success-color: #238636;
     --danger-color: #da3633;
     --warning-color: #d29922;
-    --title-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --title-font: 'Segoe UI', sans-serif;
 }
 
 body {
@@ -33,37 +33,89 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* Header & Logo */
 .logo-container { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
 .main-title { font-size: 2rem; margin: 0; text-transform: uppercase; color: white; display: inline-block; }
 .main-title .highlight { color: var(--accent-color); font-weight: 900; }
-.version-tag { display: block; font-size: 0.75rem; color: var(--warning-color); font-weight: bold; letter-spacing: 1px; margin-top: 5px; }
-.subtitle { color: #8b949e; font-size: 0.9rem; margin-top: 5px; }
+.subtitle { color: #8b949e; font-size: 0.9rem; margin-top: 5px; letter-spacing: 1px; }
+
+.version-tag {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.75rem;
+    color: var(--warning-color);
+    font-family: monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
 
 h3 { color: var(--accent-color); border-left: 3px solid var(--accent-color); padding-left: 10px; margin: 0 0 15px 0; }
 
 .section { margin-bottom: 25px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid #21262d; }
 
-/* Inputs */
 .raw-input-container { display: flex; gap: 15px; margin-bottom: 15px; }
 .input-wrapper { flex: 1; }
-textarea { width: 100%; min-height: 100px; padding: 10px; background: #010409; border: 1px solid var(--border-color); color: #8b949e; border-radius: 6px; font-family: monospace; font-size: 0.8rem; resize: vertical; }
-textarea:focus { outline: none; border-color: var(--accent-color); color: #e6edf3; }
-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #e6edf3; }
 
-/* Buttons */
-button { cursor: pointer; padding: 12px; border: none; border-radius: 6px; font-weight: bold; color: white; text-transform: uppercase; transition: all 0.2s; width: 100%; }
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    background-color: #0d1117;
+    border: 1px solid var(--border-color);
+    color: #8b949e;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 0.8rem;
+    white-space: pre;
+    resize: vertical;
+}
+textarea:focus { outline: none; border-color: var(--accent-color); color: #e6edf3; }
+
+label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #e6edf3; }
+.l-met { color: var(--metal-color); }
+.l-crys { color: var(--crystal-color); }
+.l-deut { color: var(--deuterium-color); }
+
+.config-section { background: rgba(88, 166, 255, 0.04); border-color: rgba(88, 166, 255, 0.2); }
+.config-row { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+.toggle-group { display: flex; gap: 15px; }
+.toggle-group label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: normal; margin-right: 15px; }
+
+.input-group { display: flex; gap: 15px; }
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #0d1117;
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+button {
+    cursor: pointer;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    color: white;
+    font-size: 0.95em;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 button:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .btn-primary { background: var(--accent-color); box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
 .btn-success { background: var(--success-color); }
 .btn-secondary { background: #30363d; font-size: 0.8em; padding: 8px 15px; width: auto; }
-.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-small { width: auto; }
 
-/* Config */
-.config-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
-.toggle-group label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: normal; margin-right: 15px; }
+.status-msg { text-align: center; margin-top: 10px; font-weight: bold; font-size: 0.9em; min-height: 20px; }
+.text-ok { color: var(--success-color); }
+.text-err { color: var(--danger-color); }
 
-/* --- DASHBOARD STYLES --- */
 .summary-card {
     background: linear-gradient(145deg, #1c2128, #161b22);
     border: 1px solid var(--border-color);
@@ -117,7 +169,4 @@ button:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .route-arrow { color: #8b949e; margin: 0 10px; font-size: 0.8em; }
 .route-amount { color: white; font-weight: bold; }
 
-.status-msg { text-align: center; margin-top: 10px; font-weight: bold; font-size: 0.9em; min-height: 20px; }
-.text-ok { color: var(--success-color); }
-.text-err { color: var(--danger-color); }
 .result-box { background: #0d1117; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; white-space: pre-wrap; font-family: monospace; font-size: 0.85em; color: #e6edf3; max-height: 200px; overflow-y: auto; }

@@ -14,13 +14,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 1.7 (Fleet Weight Fix)</span>
-        <div class="subtitle">Correzione calcolo Flotta Iniziale e Peso %</div>
+        <span class="version-tag">Versione 1.8 (Fleet Fix Final)</span>
+        <div class="subtitle">Correzione definitiva lettura Flotta Iniziale</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema calcolerà correttamente il peso della flotta per la mod. Pesata.</p>
+        <p class="api-note">Incolla qui i dati. Il sistema calcolerà il peso flotta corretto.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 GENERA DASHBOARD v1.7</button>
+        <button class="btn-primary" id="btn-parse">🚀 GENERA DASHBOARD v1.8</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -80,12 +80,10 @@
         </div>
 
         <div id="global-summary" class="summary-card"></div>
-        
         <div id="transport-container"></div>
-
         <div id="cards-container" class="cards-grid"></div>
 
-        <h4 style="margin-top: 30px;">Report Testuale (Per Discord/Whatsapp)</h4>
+        <h4 style="margin-top: 30px;">Report Testuale</h4>
         <div class="result-box" id="copyText">In attesa di dati...</div>
         <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
     </div>
