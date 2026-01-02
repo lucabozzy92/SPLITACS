@@ -9,6 +9,7 @@
     --deuterium-color: #4ade80;
     --success-color: #238636;
     --danger-color: #da3633;
+    --warning-color: #d29922;
     --title-font: 'Segoe UI', sans-serif;
 }
 
@@ -24,7 +25,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 950px;
+    max-width: 1100px;
     background-color: var(--panel-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -41,9 +42,22 @@ body {
     letter-spacing: 2px;
     color: white;
     text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+    display: inline-block;
 }
 .main-title .highlight { color: var(--accent-color); font-weight: 900; }
 .subtitle { color: #8b949e; font-size: 0.9rem; margin-top: 5px; letter-spacing: 1px; }
+
+/* VERSIONE STYLE V0.3 */
+.version-tag {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.75rem;
+    color: var(--warning-color);
+    font-family: monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
 
 h3 { color: var(--accent-color); font-size: 1.1rem; border-left: 3px solid var(--accent-color); padding-left: 10px; margin-top: 0; }
 
@@ -89,7 +103,7 @@ label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85em;
 
 /* INPUTS & BUTTONS */
 .input-group { display: flex; gap: 15px; }
-input[type="number"] {
+input[type="text"] {
     width: 100%;
     padding: 10px;
     background-color: #0d1117;
@@ -97,6 +111,7 @@ input[type="number"] {
     color: white;
     border-radius: 4px;
     font-weight: bold;
+    font-family: monospace;
 }
 
 button {
@@ -122,12 +137,14 @@ button:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .text-ok { color: var(--success-color); }
 .text-err { color: var(--danger-color); }
 
-table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.9em; }
-th { text-align: left; padding: 10px; color: var(--accent-color); border-bottom: 2px solid var(--border-color); }
-td { padding: 10px; border-bottom: 1px solid #21262d; }
-td.num { text-align: right; font-family: monospace; font-size: 1.05em; }
+table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.85em; }
+th { text-align: left; padding: 10px; color: var(--accent-color); border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 1px solid #21262d; }
+td.num { text-align: right; font-family: monospace; font-size: 1.1em; white-space: nowrap; }
 td.neg { color: var(--danger-color); }
 td.pos { color: var(--success-color); }
+td.neut { color: var(--metal-color); }
+td.warn { color: var(--warning-color); font-weight: bold; }
 tr:last-child td { border-bottom: none; }
 
 .result-box {

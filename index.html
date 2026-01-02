@@ -10,35 +10,38 @@
 
 <div class="container">
     <div class="logo-container">
-        <h1 class="main-title">OGame <span class="highlight">SPARTIZIONE</span> CDR SAC</h1>
-        <div class="subtitle">Analizzatore Avanzato CR & RR</div>
+        <h1 class="main-title">
+            OGame <span class="highlight">SPARTIZIONE</span> SAC 
+        </h1>
+        <span class="version-tag">Versione 0.3 (Live)</span>
+        <div class="subtitle">Analizzatore CR & RR con Gestione Deuterio</div>
     </div>
 
     <div class="section">
-        <h3>1. Inserimento Dati RAW (Grezzi)</h3>
-        <p class="api-note">Incolla qui il contenuto "stdClass Object" fornito dal lettore API.</p>
+        <h3>1. Inserimento Dati RAW</h3>
+        <p class="api-note">Incolla qui i dati grezzi. Il sistema leggerà automaticamente Metallo, Cristallo e Deuterio.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
                 <label>Combat Report (CR) - RAW</label>
-                <textarea id="raw-cr" placeholder="Incolla qui il RAW del Combat Report (inizia con stdClass Object...)"></textarea>
+                <textarea id="raw-cr" placeholder="Incolla qui il RAW del Combat Report..."></textarea>
             </div>
             <div class="input-wrapper">
                 <label>Recycle Report (RR) - RAW</label>
-                <textarea id="raw-rr" placeholder="Incolla qui il RAW del Recycle Report (Opzionale se inserisci i dati a mano sotto)"></textarea>
+                <textarea id="raw-rr" placeholder="Incolla qui uno o più RAW dei Recycle Report..."></textarea>
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA DATI</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA BILANCIO v0.3</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
     <div class="section config-section">
-        <h3>2. Configurazione Spartizione</h3>
+        <h3>2. Configurazione</h3>
         
         <div class="config-row">
             <div class="config-group">
-                <span class="label">Ruolo da Calcolare:</span>
+                <span class="label">Ruolo:</span>
                 <div class="toggle-group">
                     <label>
                         <input type="radio" name="role" value="attacker" checked> ⚔️ Attaccanti
@@ -50,48 +53,48 @@
             </div>
 
             <div class="config-group">
-                <span class="label">Metodo di Divisione Utile:</span>
+                <span class="label">Metodo Divisione Utile:</span>
                 <div class="toggle-group">
                     <label>
-                        <input type="radio" name="method" value="equal" checked> 🤝 Equa (Parti Uguali)
+                        <input type="radio" name="method" value="equal" checked> 🤝 Equa
                     </label>
                     <label>
-                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (In base alla Flotta)
+                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata
                     </label>
                 </div>
             </div>
         </div>
-        <p class="small-info">Nota: Le perdite vengono sempre rimborsate prima di dividere l'utile netto.</p>
+        <p class="small-info">Il calcolo rimborsa prima le perdite (Met+Cris+Deut) e poi divide l'utile rimanente.</p>
     </div>
 
     <div class="section res-met">
-        <h3>3. Risorse Raccolte (Totale CDR)</h3>
+        <h3>3. Totale CDR Raccolto</h3>
         <div class="input-group">
             <div class="input-wrapper">
                 <label class="l-met">Metallo</label>
-                <input type="number" id="totalMetal" placeholder="0">
+                <input type="text" id="totalMetal" placeholder="0" readonly>
             </div>
             <div class="input-wrapper">
                 <label class="l-crys">Cristallo</label>
-                <input type="number" id="totalCrystal" placeholder="0">
+                <input type="text" id="totalCrystal" placeholder="0" readonly>
             </div>
             <div class="input-wrapper">
                 <label class="l-deut">Deuterio</label>
-                <input type="number" id="totalDeuterium" placeholder="0">
+                <input type="text" id="totalDeuterium" placeholder="0" readonly>
             </div>
         </div>
     </div>
 
     <div class="section">
-        <h3>4. Tabella Risultati</h3>
+        <h3>4. Bilancio Finale</h3>
         <div style="margin-bottom: 10px; text-align: right;">
-            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola Manualmente</button>
+            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola</button>
         </div>
         <div id="table-container"></div>
 
-        <h4>Testo per Chat / Discord / Whatsapp</h4>
-        <div class="result-box" id="copyText">In attesa di elaborazione...</div>
-        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Testo</button>
+        <h4>Report Testuale</h4>
+        <div class="result-box" id="copyText">In attesa di dati...</div>
+        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
     </div>
 </div>
 
