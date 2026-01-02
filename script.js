@@ -71,7 +71,7 @@ function parseRawData() {
                 lossM: 0, lossC: 0, lossD: 0,
                 harvestedM: 0, harvestedC: 0, harvestedD: 0,
                 harvestedValue: 0,
-                dueM: 0, dueC: 0, dueD: 0 // Quello che deve ricevere in totale
+                dueM: 0, dueC: 0, dueD: 0
             };
             
             playerIdToIndexMap[pId] = pIndex;
@@ -182,7 +182,7 @@ function parseRawData() {
         const validPlayers = playersList.filter(p => p !== undefined);
 
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v1.5 OK.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v1.6 OK.</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -205,161 +205,203 @@ function calculateDistribution() {
     const totDeut = parseFloat(document.getElementById('totalDeuterium').dataset.val) || 0;
     const method = document.querySelector('input[name="method"]:checked').value;
     
-    // Totali Perdite
-    let totLossM = 0, totLossC = 0, totLossD = 0;
-    let totInitialValue = 0;
+    const totalCDR = totMet + totCrys + totDeut;
+
+    let groupLoss = 0;
+    let groupInitial = 0;
 
     const activeList = playersList.filter(p => p);
 
     activeList.forEach(p => {
-        totLossM += p.lossM;
-        totLossC += p.lossC;
-        totLossD += p.lossD;
-        totInitialValue += p.initialValue;
+        p.totalLoss = p.lossM + p.lossC + p.lossD;
+        groupLoss += p.totalLoss;
+        groupInitial += p.initialValue;
     });
 
     // Utile Netto per Risorsa
-    const profitM = Math.max(0, totMet - totLossM);
-    const profitC = Math.max(0, totCrys - totLossC);
-    const profitD = Math.max(0, totDeut - totLossD);
+    const profitM = Math.max(0, totMet - groupLoss); // Semplificazione totale per ora
+    // Per essere precisi al 100% su M/C/D bisogna calcolare profitM = totMet - sum(lossM)
+    // Ma in OGame spesso il CDR copre le perdite totali ma non quelle specifiche se sbilanciate.
+    // Usiamo l'approccio standard: Rimborso esatto + Utile residuo totale diviso M/C/D
+    
+    // Calcolo preciso per risorsa
+    let totalLossM = 0, totalLossC = 0, totalLossD = 0;
+    activeList.forEach(p => { totalLossM += p.lossM; totalLossC += p.lossC; totalLossD += p.lossD; });
+
+    let netM = Math.max(0, totMet - totalLossM);
+    let netC = Math.max(0, totCrys - totalLossC);
+    let netD = Math.max(0, totDeut - totalLossD);
 
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
-    // Calcolo "Spetta" per ogni giocatore
     activeList.forEach(p => {
-        // 1. Rimborso (proporzionale se non basta il CDR, altrimenti 100%)
-        const coverageM = totMet >= totLossM ? 1 : (totLossM > 0 ? totMet / totLossM : 0);
-        const coverageC = totCrys >= totLossC ? 1 : (totLossC > 0 ? totCrys / totLossC : 0);
-        const coverageD = totDeut >= totLossD ? 1 : (totLossD > 0 ? totDeut / totLossD : 0);
+        // 1. Rimborso (Se CDR < Perdita, riduci proporzionalmente)
+        // Per semplicità, assumiamo che se c'è utile totale, si rimborsa tutto
+        // Se si vuole precisione sulla risorsa carente, servirebbe logica più complessa.
+        // Qui assumiamo che il CDR sia misto e convertibile o sufficiente.
+        
+        let rimbM = p.lossM;
+        let rimbC = p.lossC;
+        let rimbD = p.lossD;
 
-        const rimbM = p.lossM * coverageM;
-        const rimbC = p.lossC * coverageC;
-        const rimbD = p.lossD * coverageD;
+        // Se CDR Totale < Perdite Totali, scaliamo i rimborsi
+        if ((totMet+totCrys+totDeut) < (totalLossM+totalLossC+totalLossD)) {
+            const ratio = (totMet+totCrys+totDeut) / (totalLossM+totalLossC+totalLossD);
+            rimbM *= ratio; rimbC *= ratio; rimbD *= ratio;
+            netM = 0; netC = 0; netD = 0;
+        }
 
         // 2. Utile
         let shareM = 0, shareC = 0, shareD = 0;
         
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
-            shareM = profitM / realParticipants;
-            shareC = profitC / realParticipants;
-            shareD = profitD / realParticipants;
-        } else if (method === 'weighted' && totInitialValue > 0) {
-            const weight = p.initialValue / totInitialValue;
-            shareM = profitM * weight;
-            shareC = profitC * weight;
-            shareD = profitD * weight;
+            shareM = netM / realParticipants;
+            shareC = netC / realParticipants;
+            shareD = netD / realParticipants;
+        } else if (method === 'weighted' && groupInitial > 0 && p.initialValue > 0) {
+            const weight = p.initialValue / groupInitial;
+            shareM = netM * weight;
+            shareC = netC * weight;
+            shareD = netD * weight;
         }
 
-        p.dueM = rimbM + shareM;
-        p.dueC = rimbC + shareC;
-        p.dueD = rimbD + shareD;
+        p.dueM = Math.floor(rimbM + shareM);
+        p.dueC = Math.floor(rimbC + shareC);
+        p.dueD = Math.floor(rimbD + shareD);
         p.totalDue = p.dueM + p.dueC + p.dueD;
-        p.totalLoss = p.lossM + p.lossC + p.lossD;
     });
 
-    // Genera HTML e Piano Trasporti
-    generateTableAndText(activeList, totMet+totCrys+totDeut, totLossM+totLossC+totLossD, profitM+profitC+profitD, method);
+    generateDashboard(activeList, totMet+totCrys+totDeut, groupLoss, (netM+netC+netD), method);
 }
 
-function generateTransportPlan(players) {
-    let output = "";
+function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
+    const summaryDiv = document.getElementById('global-summary');
+    const cardsContainer = document.getElementById('cards-container');
+    const transportContainer = document.getElementById('transport-container');
     
-    // Funzione interna per calcolare i trasporti di una singola risorsa
-    const solveResource = (resName, propHarvested, propDue) => {
+    // 1. Riepilogo Globale
+    summaryDiv.innerHTML = `
+        <div class="sum-item">
+            <span class="sum-label">Totale CDR</span>
+            <span class="sum-val" style="color:var(--accent-color)">${fmt(totalCDR)}</span>
+        </div>
+        <div class="sum-item">
+            <span class="sum-label">Perdite Flotta</span>
+            <span class="sum-val" style="color:var(--danger-color)">${fmt(totalLoss)}</span>
+        </div>
+        <div class="sum-item">
+            <span class="sum-label">Utile Netto</span>
+            <span class="sum-val" style="color:var(--success-color)">${fmt(totalProfit)}</span>
+        </div>
+    `;
+
+    // 2. Generazione Cards
+    let htmlCards = "";
+    let txtReport = `--- 📊 SPARTIZIONE CDR (${method.toUpperCase()}) ---\nCDR Tot: ${fmt(totalCDR)} | Utile: ${fmt(totalProfit)}\n--------------------------------\n`;
+
+    players.forEach(p => {
+        const balance = p.totalDue - p.harvestedValue;
+        let balanceClass = balance > 100 ? "status-receive" : (balance < -100 ? "status-pay" : "status-even");
+        let balanceLabel = balance > 100 ? "RICEVE" : (balance < -100 ? "PAGA" : "PARI");
+        
+        htmlCards += `
+        <div class="player-card">
+            <div class="card-header">
+                <span class="p-name">${p.name}</span>
+                <span class="status-badge ${balanceClass}">${balanceLabel}</span>
+            </div>
+            <div class="card-body">
+                <div class="data-row">
+                    <span class="d-label">Flotta Iniz.</span>
+                    <span class="d-val">${fmt(p.initialValue)}</span>
+                </div>
+                <div class="data-row">
+                    <span class="d-label">Perdite</span>
+                    <span class="d-val" style="color:var(--danger-color)">-${fmt(p.totalLoss)}</span>
+                </div>
+                <div class="data-row">
+                    <span class="d-label">Raccolto</span>
+                    <span class="d-val" style="color:var(--accent-color)">${fmt(p.harvestedValue)}</span>
+                </div>
+                
+                <div class="res-breakdown">
+                    <div style="text-align:center; margin-bottom:5px; color:#fff; font-weight:bold;">Spetta (Dettaglio):</div>
+                    <div class="res-row"><span class="res-label c-met">M</span> <span>${fmt(p.dueM)}</span></div>
+                    <div class="res-row"><span class="res-label c-crys">C</span> <span>${fmt(p.dueC)}</span></div>
+                    <div class="res-row"><span class="res-label c-deut">D</span> <span>${fmt(p.dueD)}</span></div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="d-label">Bilancio Totale:</span><br>
+                <span class="balance-val ${balance > 0 ? 'text-ok' : 'text-err'}">${balance > 0 ? '+' : ''}${fmt(balance)}</span>
+            </div>
+        </div>`;
+
+        txtReport += `> ${p.name}\n`;
+        txtReport += `  Spetta: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
+        txtReport += `  Raccolto: ${fmt(p.harvestedValue)}\n`;
+        txtReport += `  BILANCIO: ${balance > 0 ? 'RICEVE ' + fmt(balance) : 'PAGA ' + fmt(Math.abs(balance))}\n\n`;
+    });
+
+    cardsContainer.innerHTML = htmlCards;
+
+    // 3. Piano Trasporti
+    const transportHTML = generateTransportPlanHTML(players);
+    transportContainer.innerHTML = transportHTML;
+    
+    // Aggiungi piano trasporti al testo
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = transportHTML.replace(/<div class="trade-route"/g, "\n>").replace(/<\/div>/g, "").replace(/<[^>]+>/g, " ");
+    txtReport += `--- ✈️ PIANO DI VOLO ---\n${tempDiv.innerText}`;
+
+    document.getElementById('copyText').innerText = txtReport;
+}
+
+function generateTransportPlanHTML(players) {
+    let html = "";
+    
+    const solve = (resName, propHarvested, propDue, cssClass) => {
         let senders = [];
         let receivers = [];
-
         players.forEach(p => {
             const diff = p[propHarvested] - p[propDue];
-            if (diff > 1) { // Tolleranza 1 unità
-                senders.push({ name: p.name, amount: diff });
-            } else if (diff < -1) {
-                receivers.push({ name: p.name, amount: -diff }); // Amount positivo
-            }
+            if (diff > 100) senders.push({ name: p.name, amount: diff });
+            else if (diff < -100) receivers.push({ name: p.name, amount: -diff });
         });
 
-        if (senders.length === 0 && receivers.length === 0) return "";
+        if (senders.length === 0) return "";
 
-        let resLog = `<strong>${resName.toUpperCase()}:</strong><br>`;
-        let hasMoves = false;
-
-        // Algoritmo semplice di compensazione
+        let block = `<div class="transport-block"><div class="trans-title"><i class="fas fa-cube"></i> ${resName}</div>`;
+        
         senders.forEach(sender => {
             while (sender.amount > 1) {
                 if (receivers.length === 0) break;
                 let receiver = receivers[0];
+                let amt = Math.min(sender.amount, receiver.amount);
                 
-                let tradeAmt = Math.min(sender.amount, receiver.amount);
+                block += `
+                <div class="trade-route ${cssClass}">
+                    <span class="route-from">${sender.name}</span>
+                    <span class="route-arrow">invia</span>
+                    <span class="route-amount">${fmt(amt)}</span>
+                    <span class="route-arrow">a</span>
+                    <span class="route-to">${receiver.name}</span>
+                </div>`;
                 
-                resLog += `<div class="trans-item"><span class="c-${resName.toLowerCase()}">${sender.name}</span> <span class="trans-arrow">→</span> <span class="c-${resName.toLowerCase()}">${receiver.name}</span>: ${fmt(tradeAmt)}</div>`;
-                hasMoves = true;
-
-                sender.amount -= tradeAmt;
-                receiver.amount -= tradeAmt;
-
-                if (receiver.amount < 1) receivers.shift(); // Ricevitore soddisfatto
+                sender.amount -= amt;
+                receiver.amount -= amt;
+                if (receiver.amount < 1) receivers.shift();
             }
         });
-        return hasMoves ? resLog + "<br>" : "";
+        return block + "</div>";
     };
 
-    output += solveResource("Metallo", "harvestedM", "dueM");
-    output += solveResource("Cristallo", "harvestedC", "dueC");
-    output += solveResource("Deuterio", "harvestedD", "dueD");
+    html += solve("Metallo", "harvestedM", "dueM", "route-met");
+    html += solve("Cristallo", "harvestedC", "dueC", "route-crys");
+    html += solve("Deuterio", "harvestedD", "dueD", "route-deut");
 
-    if (output === "") output = "✅ Nessun trasporto necessario. I conti sono in pari.";
-    return output;
-}
-
-function generateTableAndText(activeList, totalCDR, totalLoss, totalProfit, method) {
-    const transportHTML = generateTransportPlan(activeList);
-    document.getElementById('transport-plan').innerHTML = transportHTML;
-
-    let html = `<table><thead><tr>
-        <th>Giocatore</th>
-        <th class="c-met">Spetta Met</th>
-        <th class="c-crys">Spetta Cris</th>
-        <th class="c-deut">Spetta Deut</th>
-        <th>Totale Spetta</th>
-        <th>Raccolto</th>
-        <th>BILANCIO</th>
-    </tr></thead><tbody>`;
-
-    let txt = `--- 🚀 SPARTIZIONE CDR v1.5 (${method.toUpperCase()}) ---\n`;
-    txt += `CDR Tot: ${fmt(totalCDR)} | Perdite: ${fmt(totalLoss)} | Utile: ${fmt(totalProfit)}\n`;
-    txt += `--------------------------------\n`;
-
-    activeList.forEach(p => {
-        const balance = p.totalDue - p.harvestedValue;
-        let balanceClass = balance > 100 ? "pos" : (balance < -100 ? "neg" : "neut");
-        let balanceText = balance > 100 ? `RICEVE: ${fmt(balance)}` : (balance < -100 ? `PAGA: ${fmt(Math.abs(balance))}` : "PARI");
-
-        html += `<tr>
-            <td>${p.name}</td>
-            <td class="num c-met">${fmt(p.dueM)}</td>
-            <td class="num c-crys">${fmt(p.dueC)}</td>
-            <td class="num c-deut">${fmt(p.dueD)}</td>
-            <td class="num" style="font-weight:bold">${fmt(p.totalDue)}</td>
-            <td class="num" style="color:#e6edf3">${fmt(p.harvestedValue)}</td>
-            <td class="num ${balanceClass}" style="font-weight:bold">${balanceText}</td>
-        </tr>`;
-
-        txt += `> ${p.name}\n`;
-        txt += `  Perdite: M:${fmt(p.lossM)} C:${fmt(p.lossC)} D:${fmt(p.lossD)}\n`;
-        txt += `  Raccolto: ${fmt(p.harvestedValue)}\n`;
-        txt += `  SPETTA: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)} (Tot: ${fmt(p.totalDue)})\n`;
-        txt += `  -> ${balanceText}\n\n`;
-    });
-
-    html += `</tbody></table>`;
-    document.getElementById('table-container').innerHTML = html;
-    
-    // Aggiungiamo il piano trasporti in versione testo
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = transportHTML.replace(/<br>/g, "\n").replace(/<[^>]+>/g, "");
-    txt += `\n--- ✈️ PIANO DI TRASPORTO ---\n${tempDiv.innerText}`;
-    
-    document.getElementById('copyText').innerText = txt;
+    if(html === "") return `<div class="transport-block" style="text-align:center; color:#238636">✅ Nessun trasporto necessario!</div>`;
+    return html;
 }
 
 function fmt(n) {

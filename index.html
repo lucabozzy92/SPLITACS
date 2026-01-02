@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OGame - Spartizione CDR SAC</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
@@ -13,13 +14,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 1.5 (Transport Planner)</span>
-        <div class="subtitle">Calcolo Quote M/C/D e Piano di Trasporto</div>
+        <span class="version-tag">Versione 1.6 (Dashboard UI)</span>
+        <div class="subtitle">Interfaccia Grafica a Schede e Piano Trasporti</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema genererà i trasporti necessari per pareggiare i conti.</p>
+        <p class="api-note">Incolla qui i dati. Il sistema genererà una dashboard grafica.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -32,7 +33,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA PIANO DI VOLO v1.5</button>
+        <button class="btn-primary" id="btn-parse">🚀 GENERA DASHBOARD v1.6</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -59,45 +60,32 @@
                         <input type="radio" name="method" value="equal" checked> 🤝 Equa
                     </label>
                     <label>
-                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (Valore Flotta)
+                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata
                     </label>
                 </div>
             </div>
         </div>
-        <p class="small-info">Rimborso totale delle perdite (M+C+D) prioritario, poi divisione utile.</p>
     </div>
 
-    <div class="section res-met">
-        <h3>3. Totale CDR Raccolto</h3>
-        <div class="input-group">
-            <div class="input-wrapper">
-                <label class="l-met">Metallo</label>
-                <input type="text" id="totalMetal" placeholder="0" readonly>
-            </div>
-            <div class="input-wrapper">
-                <label class="l-crys">Cristallo</label>
-                <input type="text" id="totalCrystal" placeholder="0" readonly>
-            </div>
-            <div class="input-wrapper">
-                <label class="l-deut">Deuterio</label>
-                <input type="text" id="totalDeuterium" placeholder="0" readonly>
-            </div>
-        </div>
+    <div class="section res-met" style="display:none;">
+        <input type="hidden" id="totalMetal">
+        <input type="hidden" id="totalCrystal">
+        <input type="hidden" id="totalDeuterium">
     </div>
 
     <div class="section">
-        <h3>4. Bilancio & Trasporti</h3>
-        <div style="margin-bottom: 10px; text-align: right;">
+        <div class="header-row">
+            <h3>4. Dashboard Bilancio</h3>
             <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola</button>
         </div>
+
+        <div id="global-summary" class="summary-card"></div>
         
-        <div id="transport-plan" class="transport-box">
-            <em>Il piano di trasporto apparirà qui dopo l'elaborazione...</em>
-        </div>
+        <div id="transport-container"></div>
 
-        <div id="table-container" class="table-responsive"></div>
+        <div id="cards-container" class="cards-grid"></div>
 
-        <h4>Output Copia/Incolla</h4>
+        <h4 style="margin-top: 30px;">Report Testuale (Per Discord/Whatsapp)</h4>
         <div class="result-box" id="copyText">In attesa di dati...</div>
         <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
     </div>
