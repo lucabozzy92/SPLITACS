@@ -131,8 +131,8 @@ button:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .text-ok { color: var(--success-color); }
 .text-err { color: var(--danger-color); }
 
-/* Table Adjustments for Detail View */
-.table-responsive { overflow-x: auto; }
+/* Table Adjustments */
+.table-responsive { overflow-x: auto; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.85em; min-width: 900px; }
 th { text-align: left; padding: 10px; color: var(--accent-color); border-bottom: 2px solid var(--border-color); white-space: nowrap; }
 td { padding: 8px 10px; border-bottom: 1px solid #21262d; white-space: nowrap;}
@@ -142,6 +142,19 @@ td.pos { color: var(--success-color); }
 td.neut { color: #666; }
 td.warn { color: var(--warning-color); font-weight: bold; }
 tr:last-child td { border-bottom: none; }
+
+/* Transport Box */
+.transport-box {
+    background: #12151b;
+    border: 1px dashed var(--accent-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #e6edf3;
+    font-family: monospace;
+}
+.trans-arrow { color: var(--warning-color); font-weight: bold; margin: 0 5px; }
+.trans-item { margin-bottom: 5px; }
 
 /* Resource specific colors */
 .c-met { color: var(--metal-color); }

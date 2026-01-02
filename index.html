@@ -13,13 +13,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 1.4 (Full ID Linking)</span>
-        <div class="subtitle">Analisi Perdite e Raccolto tramite ID Univoco</div>
+        <span class="version-tag">Versione 1.5 (Transport Planner)</span>
+        <div class="subtitle">Calcolo Quote M/C/D e Piano di Trasporto</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema collega CR e RR usando l'ID Giocatore.</p>
+        <p class="api-note">Incolla qui i dati. Il sistema genererà i trasporti necessari per pareggiare i conti.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA v1.4</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA PIANO DI VOLO v1.5</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -59,12 +59,12 @@
                         <input type="radio" name="method" value="equal" checked> 🤝 Equa
                     </label>
                     <label>
-                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata
+                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata (Valore Flotta)
                     </label>
                 </div>
             </div>
         </div>
-        <p class="small-info">Il calcolo rimborsa prima le perdite totali (M+C+D) e poi divide l'utile rimanente.</p>
+        <p class="small-info">Rimborso totale delle perdite (M+C+D) prioritario, poi divisione utile.</p>
     </div>
 
     <div class="section res-met">
@@ -86,13 +86,18 @@
     </div>
 
     <div class="section">
-        <h3>4. Bilancio Dettagliato</h3>
+        <h3>4. Bilancio & Trasporti</h3>
         <div style="margin-bottom: 10px; text-align: right;">
             <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola</button>
         </div>
+        
+        <div id="transport-plan" class="transport-box">
+            <em>Il piano di trasporto apparirà qui dopo l'elaborazione...</em>
+        </div>
+
         <div id="table-container" class="table-responsive"></div>
 
-        <h4>Report Testuale (con dettaglio M/C/D)</h4>
+        <h4>Output Copia/Incolla</h4>
         <div class="result-box" id="copyText">In attesa di dati...</div>
         <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
     </div>
