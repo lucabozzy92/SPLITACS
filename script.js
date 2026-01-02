@@ -1,21 +1,210 @@
-/* --- CONFIGURAZIONE COSTI NAVI (STANDARD OGAME) --- */
-const SHIPS = {
-    202: { m: 2000, c: 2000, d: 0, name: "Cargo Leggero" },
-    203: { m: 6000, c: 6000, d: 0, name: "Cargo Pesante" },
-    204: { m: 3000, c: 1000, d: 0, name: "Caccia Leggero" },
-    205: { m: 6000, c: 4000, d: 0, name: "Caccia Pesante" },
-    206: { m: 20000, c: 7000, d: 2000, name: "Incrociatore" },
-    207: { m: 45000, c: 15000, d: 0, name: "Nave da Battaglia" },
-    208: { m: 10000, c: 20000, d: 10000, name: "Colonizzatrice" },
-    209: { m: 10000, c: 6000, d: 2000, name: "Riciclatrice" },
-    210: { m: 0, c: 1000, d: 0, name: "Sonda Spia" },
-    211: { m: 50000, c: 25000, d: 15000, name: "Bombardiere" },
-    212: { m: 0, c: 2000, d: 500, name: "Satellite Solare" },
-    213: { m: 60000, c: 50000, d: 15000, name: "Corazzata" },
-    214: { m: 5000000, c: 4000000, d: 1000000, name: "Morte Nera" },
-    215: { m: 30000, c: 40000, d: 15000, name: "Incrociatore da Battaglia" },
-    218: { m: 85000, c: 55000, d: 15000, name: "Reaper" },
-    219: { m: 8000, c: 15000, d: 8000, name: "Pathfinder" }
+/* --- TRADUZIONI --- */
+const LANG_DATA = {
+    it: {
+        subtitle: "Analisi Perdite e Piano di Volo SAC",
+        sec_input: "1. Inserimento Dati RAW",
+        api_note: "Incolla qui i dati grezzi dell'API OGame.",
+        btn_parse: "🚀 ELABORA DATI",
+        sec_config: "2. Configurazione",
+        lbl_role: "Ruolo:",
+        opt_attacker: "Attaccanti",
+        opt_defender: "Difensori",
+        lbl_method: "Metodo Divisione:",
+        opt_equal: "Equa",
+        opt_weighted: "Pesata",
+        sec_dashboard: "4. Dashboard Bilancio",
+        btn_recalc: "🔄 Ricalcola",
+        lbl_report: "Report Testuale (Copia/Incolla)",
+        btn_copy: "Copia Report",
+        
+        // Dashboard
+        sum_cdr: "Totale CDR",
+        sum_loss: "Perdite Flotta",
+        sum_profit: "Utile Netto",
+        
+        // Cards
+        card_fleet: "Flotta Iniz.",
+        card_weight: "% Peso Flotta",
+        card_loss: "Perdite Tot.",
+        card_harvest: "Raccolto",
+        card_due: "Spetta (Dettaglio)",
+        card_bal: "Bilancio Totale",
+        status_rec: "RICEVE",
+        status_pay: "PAGA",
+        status_even: "PARI",
+        
+        // Transport
+        trans_send: "invia",
+        trans_to: "a",
+        trans_none: "✅ Nessun trasporto necessario!",
+        
+        // Report
+        rep_title: "SPARTIZIONE CDR",
+        rep_flight: "PIANO DI VOLO",
+        rep_spetta: "Spetta"
+    },
+    en: {
+        subtitle: "ACS Loss Analysis & Transport Plan",
+        sec_input: "1. RAW Data Input",
+        api_note: "Paste OGame API raw data here.",
+        btn_parse: "🚀 PROCESS DATA",
+        sec_config: "2. Configuration",
+        lbl_role: "Role:",
+        opt_attacker: "Attackers",
+        opt_defender: "Defenders",
+        lbl_method: "Split Method:",
+        opt_equal: "Equal",
+        opt_weighted: "Weighted",
+        sec_dashboard: "4. Balance Dashboard",
+        btn_recalc: "🔄 Recalculate",
+        lbl_report: "Text Report (Copy/Paste)",
+        btn_copy: "Copy Report",
+        sum_cdr: "Total DF",
+        sum_loss: "Fleet Losses",
+        sum_profit: "Net Profit",
+        card_fleet: "Init. Fleet",
+        card_weight: "Fleet Weight %",
+        card_loss: "Tot. Losses",
+        card_harvest: "Harvested",
+        card_due: "Due (Detail)",
+        card_bal: "Total Balance",
+        status_rec: "RECEIVES",
+        status_pay: "PAYS",
+        status_even: "EVEN",
+        trans_send: "sends",
+        trans_to: "to",
+        trans_none: "✅ No transport needed!",
+        rep_title: "ACS SPLIT",
+        rep_flight: "FLIGHT PLAN",
+        rep_spetta: "Due"
+    },
+    de: {
+        subtitle: "AKS Verlustanalyse & Transportplan",
+        sec_input: "1. RAW Daten Eingabe",
+        api_note: "Fügen Sie hier die OGame API-Rohdaten ein.",
+        btn_parse: "🚀 DATEN VERARBEITEN",
+        sec_config: "2. Konfiguration",
+        lbl_role: "Rolle:",
+        opt_attacker: "Angreifer",
+        opt_defender: "Verteidiger",
+        lbl_method: "Aufteilung:",
+        opt_equal: "Gleich",
+        opt_weighted: "Gewichtet",
+        sec_dashboard: "4. Bilanz Dashboard",
+        btn_recalc: "🔄 Neu berechnen",
+        lbl_report: "Textbericht",
+        btn_copy: "Bericht kopieren",
+        sum_cdr: "Gesamt TF",
+        sum_loss: "Flottenverluste",
+        sum_profit: "Reingewinn",
+        card_fleet: "Init. Flotte",
+        card_weight: "Flottengewicht %",
+        card_loss: "Verluste",
+        card_harvest: "Abgebaut",
+        card_due: "Anteil (Detail)",
+        card_bal: "Gesamtbilanz",
+        status_rec: "BEKOMMT",
+        status_pay: "ZAHLT",
+        status_even: "AUSGEGLICHEN",
+        trans_send: "sendet",
+        trans_to: "an",
+        trans_none: "✅ Kein Transport nötig!",
+        rep_title: "AKS AUFTEILUNG",
+        rep_flight: "FLUGPLAN",
+        rep_spetta: "Anteil"
+    },
+    es: {
+        subtitle: "Análisis de Pérdidas SAC y Plan de Vuelo",
+        sec_input: "1. Entrada de Datos RAW",
+        api_note: "Pega aquí los datos brutos de la API de OGame.",
+        btn_parse: "🚀 PROCESAR DATOS",
+        sec_config: "2. Configuración",
+        lbl_role: "Rol:",
+        opt_attacker: "Atacantes",
+        opt_defender: "Defensores",
+        lbl_method: "Método:",
+        opt_equal: "Igualitaria",
+        opt_weighted: "Ponderada",
+        sec_dashboard: "4. Panel de Balance",
+        btn_recalc: "🔄 Recalcular",
+        lbl_report: "Reporte de Texto",
+        btn_copy: "Copiar Reporte",
+        sum_cdr: "Total Escombros",
+        sum_loss: "Pérdidas Flota",
+        sum_profit: "Beneficio Neto",
+        card_fleet: "Flota Inic.",
+        card_weight: "Peso Flota %",
+        card_loss: "Pérdidas Tot.",
+        card_harvest: "Recolectado",
+        card_due: "Corresponde",
+        card_bal: "Balance Total",
+        status_rec: "RECIBE",
+        status_pay: "PAGA",
+        status_even: "PAREJO",
+        trans_send: "envía",
+        trans_to: "a",
+        trans_none: "✅ ¡No se necesita transporte!",
+        rep_title: "REPARTO SAC",
+        rep_flight: "PLAN DE VUELO",
+        rep_spetta: "Corresp."
+    },
+    fr: {
+        subtitle: "Analyse des Pertes AG et Plan de Vol",
+        sec_input: "1. Saisie des Données RAW",
+        api_note: "Collez ici les données brutes de l'API OGame.",
+        btn_parse: "🚀 TRAITER LES DONNÉES",
+        sec_config: "2. Configuration",
+        lbl_role: "Rôle:",
+        opt_attacker: "Attaquants",
+        opt_defender: "Défenseurs",
+        lbl_method: "Méthode:",
+        opt_equal: "Équitable",
+        opt_weighted: "Pondérée",
+        sec_dashboard: "4. Tableau de Bord",
+        btn_recalc: "🔄 Recalculer",
+        lbl_report: "Rapport Texte",
+        btn_copy: "Copier le Rapport",
+        sum_cdr: "Total CDR",
+        sum_loss: "Pertes Flotte",
+        sum_profit: "Bénéfice Net",
+        card_fleet: "Flotte Init.",
+        card_weight: "Poids Flotte %",
+        card_loss: "Pertes Tot.",
+        card_harvest: "Récolté",
+        card_due: "Dû (Détail)",
+        card_bal: "Bilan Total",
+        status_rec: "REÇOIT",
+        status_pay: "PAIE",
+        status_even: "ÉGAL",
+        trans_send: "envoie",
+        trans_to: "à",
+        trans_none: "✅ Aucun transport nécessaire !",
+        rep_title: "RÉPARTITION AG",
+        rep_flight: "PLAN DE VOL",
+        rep_spetta: "Dû"
+    }
+};
+
+let currentLang = 'it';
+
+/* Costi standard per calcoli */
+const SHIPS_COST = {
+    202: { m: 2000, c: 2000, d: 0 },
+    203: { m: 6000, c: 6000, d: 0 },
+    204: { m: 3000, c: 1000, d: 0 },
+    205: { m: 6000, c: 4000, d: 0 },
+    206: { m: 20000, c: 7000, d: 2000 },
+    207: { m: 45000, c: 15000, d: 0 },
+    208: { m: 10000, c: 20000, d: 10000 },
+    209: { m: 10000, c: 6000, d: 2000 },
+    210: { m: 0, c: 1000, d: 0 },
+    211: { m: 50000, c: 25000, d: 15000 },
+    212: { m: 0, c: 2000, d: 500 },
+    213: { m: 60000, c: 50000, d: 15000 },
+    214: { m: 5000000, c: 4000000, d: 1000000 },
+    215: { m: 30000, c: 40000, d: 15000 },
+    218: { m: 85000, c: 55000, d: 15000 },
+    219: { m: 8000, c: 15000, d: 8000 }
 };
 
 let playersList = []; 
@@ -24,7 +213,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-parse').addEventListener('click', parseRawData);
     document.getElementById('btn-recalc').addEventListener('click', calculateDistribution);
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
+    setLanguage('it'); // Default
 });
+
+function setLanguage(lang) {
+    currentLang = lang;
+    const t = LANG_DATA[lang];
+    
+    // Update DOM
+    document.querySelectorAll('[data-key]').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (t[key]) el.innerText = t[key];
+    });
+
+    // Update buttons active state
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
+
+    // Re-render if data exists
+    if (playersList.length > 0) calculateDistribution();
+}
 
 function parseRawData() {
     const rawCR = document.getElementById('raw-cr').value;
@@ -38,7 +246,7 @@ function parseRawData() {
     try {
         if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
 
-        // 1. CR: PARSING GIOCATORI CON ID BOUNDARY
+        // 1. CR: PARSING GIOCATORI CON ID BOUNDARY (Logica v2.0)
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
         const parts = rawCR.split(roleStartTag);
         
@@ -46,7 +254,6 @@ function parseRawData() {
         
         const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
 
-        // Trova tutti gli ID e le loro posizioni
         const idRegex = /\[fleet_owner_id\] => (\d+)/g;
         let idMatches = [];
         let match;
@@ -54,24 +261,15 @@ function parseRawData() {
             idMatches.push({ id: match[1], index: match.index });
         }
 
-        // Itera sugli ID trovati
         for (let i = 0; i < idMatches.length; i++) {
             const currentMatch = idMatches[i];
             const nextMatch = idMatches[i+1];
             const pId = currentMatch.id;
             
-            // Il blocco di questo giocatore inizia dal suo ID e finisce al prossimo ID (o fine sezione)
             const startIdx = currentMatch.index;
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
 
-            // Per il nome, dobbiamo guardare un po' indietro rispetto all'ID, 
-            // ma per sicurezza usiamo una ricerca all'indietro limitata o assumiamo che il nome sia vicino.
-            // In realtà, spesso il nome è PRIMA dell'ID. 
-            // Quindi per il nome usiamo una regex locale su una porzione più ampia o cerchiamo nell'intero blocco se strutturato.
-            
-            // Metodo sicuro per il nome: cerchiamo [fleet_owner] => X nelle vicinanze dell'ID
-            // Ma dato che abbiamo già l'indice, prendiamo una porzione di testo PRIMA dell'ID
             const headerChunk = sectionContent.substring(Math.max(0, startIdx - 500), startIdx);
             const nameMatch = headerChunk.match(/\[fleet_owner\] => (.*)/);
             const pName = nameMatch ? nameMatch[1].trim() : `Player ${pId}`;
@@ -89,14 +287,14 @@ function parseRawData() {
             };
             playerIdToIndexMap[pId] = i;
 
-            // SCANSIONE FLOTTA: Cerchiamo ship_type e count nel chunk DOPO l'ID
+            // SCANSIONE FLOTTA
             const globalShipRegex = /\[ship_type\]\s*=>\s*(\d+)[\s\S]*?\[count\]\s*=>\s*(\d+)/g;
             let sMatch;
             while ((sMatch = globalShipRegex.exec(playerChunk)) !== null) {
                 const sId = parseInt(sMatch[1]);
                 const count = parseInt(sMatch[2]);
-                if (SHIPS[sId]) {
-                    const val = (SHIPS[sId].m + SHIPS[sId].c + SHIPS[sId].d) * count;
+                if (SHIPS_COST[sId]) {
+                    const val = (SHIPS_COST[sId].m + SHIPS_COST[sId].c + SHIPS_COST[sId].d) * count;
                     playersList[i].initialValue += val;
                 }
             }
@@ -126,10 +324,10 @@ function parseRawData() {
                 const sId = parseInt(lMatch[2]);
                 const count = parseInt(lMatch[3]);
 
-                if (playersList[ownerIdx] && SHIPS[sId]) {
-                    playersList[ownerIdx].lossM += (SHIPS[sId].m * count);
-                    playersList[ownerIdx].lossC += (SHIPS[sId].c * count);
-                    playersList[ownerIdx].lossD += (SHIPS[sId].d * count);
+                if (playersList[ownerIdx] && SHIPS_COST[sId]) {
+                    playersList[ownerIdx].lossM += (SHIPS_COST[sId].m * count);
+                    playersList[ownerIdx].lossC += (SHIPS_COST[sId].c * count);
+                    playersList[ownerIdx].lossD += (SHIPS_COST[sId].d * count);
                 }
             }
         }
@@ -165,7 +363,7 @@ function parseRawData() {
                     playersList.push({
                         index: newIdx,
                         id: recId,
-                        name: recName + " (Esterno)",
+                        name: recName + " (Ext)",
                         initialValue: 0,
                         lossM: 0, lossC: 0, lossD: 0,
                         harvestedM: m, harvestedC: c, harvestedD: d,
@@ -193,7 +391,7 @@ function parseRawData() {
         const validPlayers = playersList.filter(p => p !== undefined);
 
         if(validPlayers.length > 0) {
-            statusDiv.innerHTML = `<span class="text-ok">✅ Analisi v2.0 OK.</span>`;
+            statusDiv.innerHTML = `<span class="text-ok">✅ OK (${validPlayers.length} Players)</span>`;
             calculateDistribution();
         } else {
             throw new Error("Nessun giocatore trovato.");
@@ -201,7 +399,7 @@ function parseRawData() {
 
     } catch (e) {
         console.error(e);
-        statusDiv.innerHTML = `<span class="text-err">⚠️ Errore: ${e.message}</span>`;
+        statusDiv.innerHTML = `<span class="text-err">⚠️ Error: ${e.message}</span>`;
     }
 }
 
@@ -211,6 +409,7 @@ function extractRes(text, regex) {
 }
 
 function calculateDistribution() {
+    const tData = LANG_DATA[currentLang]; // Get current translations
     const totMet = parseFloat(document.getElementById('totalMetal').dataset.val) || 0;
     const totCrys = parseFloat(document.getElementById('totalCrystal').dataset.val) || 0;
     const totDeut = parseFloat(document.getElementById('totalDeuterium').dataset.val) || 0;
@@ -242,7 +441,6 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
-        // 1. Rimborso
         let rimbM = p.lossM;
         let rimbC = p.lossC;
         let rimbD = p.lossD;
@@ -253,7 +451,6 @@ function calculateDistribution() {
             netM = 0; netC = 0; netD = 0;
         }
 
-        // 2. Utile
         let shareM = 0, shareC = 0, shareD = 0;
         
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
@@ -273,36 +470,36 @@ function calculateDistribution() {
         p.totalDue = p.dueM + p.dueC + p.dueD;
     });
 
-    generateDashboard(activeList, totMet+totCrys+totDeut, groupLoss, (netM+netC+netD), method);
+    generateDashboard(activeList, totMet+totCrys+totDeut, groupLoss, (netM+netC+netD), method, tData);
 }
 
-function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
+function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t) {
     const summaryDiv = document.getElementById('global-summary');
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
     summaryDiv.innerHTML = `
         <div class="sum-item">
-            <span class="sum-label">Totale CDR</span>
+            <span class="sum-label">${t.sum_cdr}</span>
             <span class="sum-val" style="color:var(--accent-color)">${fmt(totalCDR)}</span>
         </div>
         <div class="sum-item">
-            <span class="sum-label">Perdite Flotta</span>
+            <span class="sum-label">${t.sum_loss}</span>
             <span class="sum-val" style="color:var(--danger-color)">${fmt(totalLoss)}</span>
         </div>
         <div class="sum-item">
-            <span class="sum-label">Utile Netto</span>
+            <span class="sum-label">${t.sum_profit}</span>
             <span class="sum-val" style="color:var(--success-color)">${fmt(totalProfit)}</span>
         </div>
     `;
 
     let htmlCards = "";
-    let txtReport = `--- 📊 SPARTIZIONE CDR (${method.toUpperCase()}) ---\n`;
+    let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
         const balance = p.totalDue - p.harvestedValue;
         let balanceClass = balance > 100 ? "status-receive" : (balance < -100 ? "status-pay" : "status-even");
-        let balanceLabel = balance > 100 ? "RICEVE" : (balance < -100 ? "PAGA" : "PARI");
+        let balanceLabel = balance > 100 ? t.status_rec : (balance < -100 ? t.status_pay : t.status_even);
         const weightStr = p.weightPercentage.toFixed(2) + "%";
 
         htmlCards += `
@@ -313,52 +510,52 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method) {
             </div>
             <div class="card-body">
                 <div class="data-row">
-                    <span class="d-label">Flotta Iniz.</span>
+                    <span class="d-label">${t.card_fleet}</span>
                     <span class="d-val">${fmt(p.initialValue)}</span>
                 </div>
                 <div class="data-row">
-                    <span class="d-label">% Peso Flotta</span>
+                    <span class="d-label">${t.card_weight}</span>
                     <span class="d-val" style="color:var(--warning-color)">${weightStr}</span>
                 </div>
                 <div class="data-row">
-                    <span class="d-label">Perdite Tot.</span>
+                    <span class="d-label">${t.card_loss}</span>
                     <span class="d-val" style="color:var(--danger-color)">-${fmt(p.totalLoss)}</span>
                 </div>
                 <div class="data-row">
-                    <span class="d-label">Raccolto</span>
+                    <span class="d-label">${t.card_harvest}</span>
                     <span class="d-val" style="color:var(--accent-color)">${fmt(p.harvestedValue)}</span>
                 </div>
                 <div class="res-breakdown">
-                    <div style="text-align:center; margin-bottom:5px; color:#fff; font-weight:bold;">Spetta (Dettaglio):</div>
+                    <div style="text-align:center; margin-bottom:5px; color:#fff; font-weight:bold;">${t.card_due}</div>
                     <div class="res-row"><span class="res-label c-met">M</span> <span>${fmt(p.dueM)}</span></div>
                     <div class="res-row"><span class="res-label c-crys">C</span> <span>${fmt(p.dueC)}</span></div>
                     <div class="res-row"><span class="res-label c-deut">D</span> <span>${fmt(p.dueD)}</span></div>
                 </div>
             </div>
             <div class="card-footer">
-                <span class="d-label">Bilancio Totale:</span><br>
+                <span class="d-label">${t.card_bal}:</span><br>
                 <span class="balance-val ${balance > 0 ? 'text-ok' : 'text-err'}">${balance > 0 ? '+' : ''}${fmt(balance)}</span>
             </div>
         </div>`;
 
-        txtReport += `> ${p.name} (Peso: ${weightStr})\n`;
-        txtReport += `  Spetta: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
-        txtReport += `  BILANCIO: ${balance > 0 ? 'RICEVE ' + fmt(balance) : 'PAGA ' + fmt(Math.abs(balance))}\n\n`;
+        txtReport += `> ${p.name} (${t.card_weight}: ${weightStr})\n`;
+        txtReport += `  ${t.rep_spetta}: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
+        txtReport += `  ${t.card_bal}: ${balance > 0 ? t.status_rec + ' ' + fmt(balance) : t.status_pay + ' ' + fmt(Math.abs(balance))}\n\n`;
     });
 
     cardsContainer.innerHTML = htmlCards;
 
-    const transportHTML = generateTransportPlanHTML(players);
+    const transportHTML = generateTransportPlanHTML(players, t);
     transportContainer.innerHTML = transportHTML;
     
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = transportHTML.replace(/<div class="trade-route"/g, "\n>").replace(/<\/div>/g, "").replace(/<[^>]+>/g, " ");
-    txtReport += `--- ✈️ PIANO DI VOLO ---\n${tempDiv.innerText}`;
+    txtReport += `--- ✈️ ${t.rep_flight} ---\n${tempDiv.innerText}`;
 
     document.getElementById('copyText').innerText = txtReport;
 }
 
-function generateTransportPlanHTML(players) {
+function generateTransportPlanHTML(players, t) {
     let html = "";
     const solve = (resName, propHarvested, propDue, cssClass) => {
         let senders = [];
@@ -378,7 +575,7 @@ function generateTransportPlanHTML(players) {
                 let receiver = receivers[0];
                 let amt = Math.min(sender.amount, receiver.amount);
                 
-                block += `<div class="trade-route ${cssClass}"><span class="route-from">${sender.name}</span> <span class="route-arrow">invia</span> <span class="route-amount">${fmt(amt)}</span> <span class="route-arrow">a</span> <span class="route-to">${receiver.name}</span></div>`;
+                block += `<div class="trade-route ${cssClass}"><span class="route-from">${sender.name}</span> <span class="route-arrow">${t.trans_send}</span> <span class="route-amount">${fmt(amt)}</span> <span class="route-arrow">${t.trans_to}</span> <span class="route-to">${receiver.name}</span></div>`;
                 sender.amount -= amt;
                 receiver.amount -= amt;
                 if (receiver.amount < 1) receivers.shift();
@@ -387,11 +584,11 @@ function generateTransportPlanHTML(players) {
         return block + "</div>";
     };
 
-    html += solve("Metallo", "harvestedM", "dueM", "route-met");
-    html += solve("Cristallo", "harvestedC", "dueC", "route-crys");
-    html += solve("Deuterio", "harvestedD", "dueD", "route-deut");
+    html += solve("Metal", "harvestedM", "dueM", "route-met");
+    html += solve("Crystal", "harvestedC", "dueC", "route-crys");
+    html += solve("Deuterium", "harvestedD", "dueD", "route-deut");
 
-    if(html === "") return `<div class="transport-block" style="text-align:center; color:#238636">✅ Nessun trasporto necessario!</div>`;
+    if(html === "") return `<div class="transport-block" style="text-align:center; color:#238636">${t.trans_none}</div>`;
     return html;
 }
 
@@ -404,7 +601,7 @@ function copyToClipboard() {
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('btn-copy');
         const orig = btn.innerText;
-        btn.innerText = "Copiato!";
+        btn.innerText = "OK!";
         setTimeout(() => btn.innerText = orig, 2000);
     });
 }

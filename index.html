@@ -3,64 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OGame - Spartizione CDR SAC</title>
+    <title>OGame ACS Splitter</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
 <div class="container">
+    <div class="lang-bar">
+        <button class="lang-btn active" onclick="setLanguage('it')">IT</button>
+        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="setLanguage('de')">DE</button>
+        <button class="lang-btn" onclick="setLanguage('es')">ES</button>
+        <button class="lang-btn" onclick="setLanguage('fr')">FR</button>
+    </div>
+
     <div class="logo-container">
         <h1 class="main-title">
-            OGame <span class="highlight">SPARTIZIONE</span> SAC 
+            OGame <span class="highlight">ACS</span> SPLIT 
         </h1>
-        <span class="version-tag">Versione 2.0 (ID Boundary)</span>
-        <div class="subtitle">Algoritmo di scansione basato sui confini ID</div>
+        <span class="version-tag">Version 2.1 (Multi-Lang)</span>
+        <div class="subtitle" data-key="subtitle">Supporto ACS Massivi & Analisi ID</div>
     </div>
 
     <div class="section">
-        <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema userà gli ID come delimitatori per trovare la flotta.</p>
+        <h3 data-key="sec_input">1. Inserimento Dati RAW</h3>
+        <p class="api-note" data-key="api_note">Incolla qui i dati API.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
-                <label>Combat Report (CR) - RAW</label>
-                <textarea id="raw-cr" placeholder="Incolla qui il RAW del Combat Report..."></textarea>
+                <label>Combat Report (CR)</label>
+                <textarea id="raw-cr" placeholder="..."></textarea>
             </div>
             <div class="input-wrapper">
-                <label>Recycle Report (RR) - RAW</label>
-                <textarea id="raw-rr" placeholder="Incolla qui uno o più RAW dei Recycle Report..."></textarea>
+                <label>Recycle Report (RR)</label>
+                <textarea id="raw-rr" placeholder="..."></textarea>
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 GENERA DASHBOARD v2.0</button>
+        <button class="btn-primary" id="btn-parse" data-key="btn_parse">🚀 ELABORA DATI</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
     <div class="section config-section">
-        <h3>2. Configurazione</h3>
+        <h3 data-key="sec_config">2. Configurazione</h3>
         
         <div class="config-row">
             <div class="config-group">
-                <span class="label">Ruolo:</span>
+                <span class="label" data-key="lbl_role">Ruolo:</span>
                 <div class="toggle-group">
                     <label>
-                        <input type="radio" name="role" value="attacker" checked> ⚔️ Attaccanti
+                        <input type="radio" name="role" value="attacker" checked> <span data-key="opt_attacker">Attaccanti</span>
                     </label>
                     <label>
-                        <input type="radio" name="role" value="defender"> 🛡️ Difensori
+                        <input type="radio" name="role" value="defender"> <span data-key="opt_defender">Difensori</span>
                     </label>
                 </div>
             </div>
 
             <div class="config-group">
-                <span class="label">Metodo Divisione Utile:</span>
+                <span class="label" data-key="lbl_method">Metodo Divisione:</span>
                 <div class="toggle-group">
                     <label>
-                        <input type="radio" name="method" value="equal" checked> 🤝 Equa
+                        <input type="radio" name="method" value="equal" checked> <span data-key="opt_equal">Equa</span>
                     </label>
                     <label>
-                        <input type="radio" name="method" value="weighted"> ⚖️ Pesata
+                        <input type="radio" name="method" value="weighted"> <span data-key="opt_weighted">Pesata</span>
                     </label>
                 </div>
             </div>
@@ -75,17 +83,17 @@
 
     <div class="section">
         <div class="header-row">
-            <h3>4. Dashboard Bilancio</h3>
-            <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola</button>
+            <h3 data-key="sec_dashboard">4. Dashboard</h3>
+            <button class="btn-secondary btn-small" id="btn-recalc" data-key="btn_recalc">🔄 Ricalcola</button>
         </div>
 
         <div id="global-summary" class="summary-card"></div>
         <div id="transport-container"></div>
         <div id="cards-container" class="cards-grid"></div>
 
-        <h4 style="margin-top: 30px;">Report Testuale</h4>
-        <div class="result-box" id="copyText">In attesa di dati...</div>
-        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy">Copia Report</button>
+        <h4 style="margin-top: 30px;" data-key="lbl_report">Report Testuale</h4>
+        <div class="result-box" id="copyText">...</div>
+        <button class="btn-success" style="margin-top:10px; width:100%" id="btn-copy" data-key="btn_copy">Copia</button>
     </div>
 </div>
 
