@@ -13,13 +13,13 @@
         <h1 class="main-title">
             OGame <span class="highlight">SPARTIZIONE</span> SAC 
         </h1>
-        <span class="version-tag">Versione 1.0 (Index Mapper)</span>
-        <div class="subtitle">Analisi corretta tramite mapping [Owner Index]</div>
+        <span class="version-tag">Versione 1.2 (Detail View)</span>
+        <div class="subtitle">Analisi con dettaglio perdite M/C/D</div>
     </div>
 
     <div class="section">
         <h3>1. Inserimento Dati RAW</h3>
-        <p class="api-note">Incolla qui i dati. Il sistema userà l'ordine degli slot (0, 1, 2...) per assegnare le perdite.</p>
+        <p class="api-note">Incolla qui i dati. Il sistema analizzerà le perdite risorsa per risorsa.</p>
         
         <div class="raw-input-container">
             <div class="input-wrapper">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <button class="btn-primary" id="btn-parse">🚀 ELABORA v1.0</button>
+        <button class="btn-primary" id="btn-parse">🚀 ELABORA v1.2</button>
         <div id="parse-status" class="status-msg"></div>
     </div>
 
@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        <p class="small-info">Il calcolo rimborsa prima le perdite totali (M+C+D) e poi divide l'utile rimanente.</p>
+        <p class="small-info">Vengono rimborsate le perdite specifiche prima di dividere l'utile.</p>
     </div>
 
     <div class="section res-met">
@@ -86,11 +86,11 @@
     </div>
 
     <div class="section">
-        <h3>4. Bilancio Finale</h3>
+        <h3>4. Bilancio Dettagliato</h3>
         <div style="margin-bottom: 10px; text-align: right;">
             <button class="btn-secondary btn-small" id="btn-recalc">🔄 Ricalcola</button>
         </div>
-        <div id="table-container"></div>
+        <div id="table-container" class="table-responsive"></div>
 
         <h4>Report Testuale</h4>
         <div class="result-box" id="copyText">In attesa di dati...</div>
