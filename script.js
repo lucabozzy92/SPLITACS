@@ -1,6 +1,7 @@
+/* --- TRANSLATIONS --- */
 const LANG_DATA = {
     it: {
-        sec_input: "Inserimento Dati RAW",
+        sec_input: "Inserimento Dati Smart",
         btn_parse: "AVVIA SPARTIZIONE",
         lbl_role: "Ruolo:",
         opt_attacker: "Attaccanti",
@@ -19,7 +20,7 @@ const LANG_DATA = {
         card_loss: "Perdite Tot.",
         card_harvest: "Raccolto",
         card_due: "Spetta (Dettaglio)",
-        card_bal: "Guadagno Reale", // Changed from "Bilancio Totale" to be explicit
+        card_bal: "Guadagno Reale",
         status_rec: "RICEVE",
         status_pay: "PAGA",
         status_even: "PARI",
@@ -31,7 +32,7 @@ const LANG_DATA = {
         rep_spetta: "Spetta"
     },
     en: {
-        sec_input: "RAW Data Input",
+        sec_input: "Smart Data Input",
         btn_parse: "START SPLIT",
         lbl_role: "Role:",
         opt_attacker: "Attackers",
@@ -62,7 +63,7 @@ const LANG_DATA = {
         rep_spetta: "Due"
     },
     de: {
-        sec_input: "RAW Daten Eingabe",
+        sec_input: "Smart Daten Eingabe",
         btn_parse: "VERARBEITUNG STARTEN",
         lbl_role: "Rolle:",
         opt_attacker: "Angreifer",
@@ -93,7 +94,7 @@ const LANG_DATA = {
         rep_spetta: "Anteil"
     },
     es: {
-        sec_input: "Entrada Datos RAW",
+        sec_input: "Entrada Datos Smart",
         btn_parse: "INICIAR REPARTO",
         lbl_role: "Rol:",
         opt_attacker: "Atacantes",
@@ -124,7 +125,7 @@ const LANG_DATA = {
         rep_spetta: "Corresp."
     },
     fr: {
-        sec_input: "Saisie Données RAW",
+        sec_input: "Saisie Données Smart",
         btn_parse: "LANCER RÉPARTITION",
         lbl_role: "Rôle:",
         opt_attacker: "Attaquants",
@@ -169,21 +170,88 @@ const SHIPS_COST = {
     218: { m: 85000, c: 55000, d: 15000 }, 219: { m: 8000, c: 15000, d: 8000 }
 };
 
+/* --- MEMORY VARIABLES --- */
+let MEMORY_CR = "";
+let MEMORY_RR = [];
 let playersList = []; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('btn-parse').addEventListener('click', parseRawData);
+    document.getElementById('btn-parse').addEventListener('click', parseData);
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
-    setLanguage('it'); 
+    document.getElementById('btn-reset-all').addEventListener('click', resetAll);
+    
+    // UNIFIED INPUT LISTENER
+    document.getElementById('unified-input').addEventListener('input', handleUnifiedInput);
 
-    // LIVE RECALC LISTENERS
-    const configInputs = document.querySelectorAll('input[name="method"], input[name="role"]');
-    configInputs.forEach(input => {
+    // LIVE RECALC
+    document.querySelectorAll('input[name="method"], input[name="role"]').forEach(input => {
         input.addEventListener('change', () => {
             if(playersList.length > 0) calculateDistribution();
         });
     });
+
+    setLanguage('it'); 
 });
+
+/* --- UNIFIED SMART INPUT LOGIC --- */
+function handleUnifiedInput() {
+    const txt = this.value;
+    const feedback = document.getElementById('input-feedback');
+    
+    // 1. Check for CR (Attackers + Rounds)
+    if(txt.includes("attackers") && txt.includes("rounds")) {
+        MEMORY_CR = txt;
+        this.value = ""; 
+        showFeedback("Combat Report Caricato!", "success");
+        updateMemoryUI();
+        return;
+    }
+
+    // 2. Check for RR (Recycler + Owner ID)
+    if(txt.includes("recycler_count") && txt.includes("owner_id")) {
+        MEMORY_RR.push(txt);
+        this.value = ""; 
+        showFeedback("Reciclata Aggiunta!", "success");
+        updateMemoryUI();
+        return;
+    }
+}
+
+function showFeedback(msg, type) {
+    const el = document.getElementById('input-feedback');
+    el.innerText = msg;
+    el.className = `input-feedback feedback-${type}`;
+    setTimeout(() => { el.style.opacity = 0; }, 2000);
+    el.style.opacity = 1;
+}
+
+function updateMemoryUI() {
+    const crBadge = document.getElementById('status-cr');
+    const rrBadge = document.getElementById('status-rr');
+    
+    if (MEMORY_CR) {
+        crBadge.classList.add('active');
+        crBadge.innerHTML = '<i class="fas fa-check"></i> CR OK';
+    } else {
+        crBadge.classList.remove('active');
+        crBadge.innerHTML = '<i class="fas fa-times"></i> CR';
+    }
+
+    if (MEMORY_RR.length > 0) {
+        rrBadge.classList.add('active');
+        rrBadge.innerHTML = `<i class="fas fa-check"></i> ${MEMORY_RR.length} RR`;
+    } else {
+        rrBadge.classList.remove('active');
+        rrBadge.innerHTML = '<i class="fas fa-hashtag"></i> 0 RR';
+    }
+}
+
+function resetAll() {
+    MEMORY_CR = "";
+    MEMORY_RR = [];
+    updateMemoryUI();
+    showFeedback("Memoria Svuotata", "error");
+}
 
 function setLanguage(lang) {
     currentLang = lang;
@@ -197,21 +265,22 @@ function setLanguage(lang) {
     if (playersList.length > 0) calculateDistribution();
 }
 
-function parseRawData() {
-    const rawCR = document.getElementById('raw-cr').value;
-    const rawRR = document.getElementById('raw-rr').value;
-    const role = document.querySelector('input[name="role"]:checked').value; 
+/* --- MAIN PARSER --- */
+function parseData() {
+    if(!MEMORY_CR) {
+        alert("Manca il Combat Report! Incolla il codice API nel box.");
+        return;
+    }
 
+    const role = document.querySelector('input[name="role"]:checked').value; 
     playersList = []; 
     let playerIdToIndexMap = {}; 
     
     try {
-        if (!rawCR || rawCR.length < 50) throw new Error("Incolla un Combat Report valido.");
-
-        // 1. CR: PLAYERS
+        // 1. PARSE PLAYERS FROM MEMORY_CR
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
-        const parts = rawCR.split(roleStartTag);
-        if (parts.length < 2) throw new Error(`Sezione ${role} non trovata.`);
+        const parts = MEMORY_CR.split(roleStartTag);
+        if (parts.length < 2) throw new Error(`Sezione ${role} non trovata nel CR.`);
         
         const sectionContent = parts[1].split(/\[(rounds|defenders|attackers)\] => Array/)[0];
         const idRegex = /\[fleet_owner_id\] => (\d+)/g;
@@ -223,7 +292,6 @@ function parseRawData() {
             const currentMatch = idMatches[i];
             const nextMatch = idMatches[i+1];
             const pId = currentMatch.id;
-            
             const startIdx = currentMatch.index;
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
@@ -251,9 +319,9 @@ function parseRawData() {
             }
         }
 
-        // 2. CR: LOSSES
+        // 2. PARSE LOSSES FROM MEMORY_CR
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
-        const roundBlocks = rawCR.split('[round_number] =>');
+        const roundBlocks = MEMORY_CR.split('[round_number] =>');
 
         for(let r=1; r < roundBlocks.length; r++) {
             let roundText = roundBlocks[r];
@@ -278,10 +346,11 @@ function parseRawData() {
             }
         }
 
-        // 3. RR: HARVEST
+        // 3. PARSE HARVEST FROM MEMORY_RR (Array)
         let totMet = 0, totCrys = 0, totDeut = 0;
-        if (rawRR && rawRR.length > 20) {
-            const rrReports = rawRR.split(/\[generic\] => stdClass Object/);
+        
+        MEMORY_RR.forEach(rrText => {
+            const rrReports = rrText.split(/\[generic\] => stdClass Object/);
             for (let k = 1; k < rrReports.length; k++) {
                 const report = rrReports[k];
                 const ownerIdMatch = report.match(/\[owner_id\] => (\d+)/);
@@ -312,10 +381,12 @@ function parseRawData() {
                     playerIdToIndexMap[recId] = newIdx;
                 }
             }
-        } else {
-            totMet = extractRes(rawCR, /\[debris_metal_total\] => (\d+)/);
-            totCrys = extractRes(rawCR, /\[debris_crystal_total\] => (\d+)/);
-            totDeut = extractRes(rawCR, /\[debris_deuterium_total\] => (\d+)/);
+        });
+
+        if(MEMORY_RR.length === 0) {
+            totMet = extractRes(MEMORY_CR, /\[debris_metal_total\] => (\d+)/);
+            totCrys = extractRes(MEMORY_CR, /\[debris_crystal_total\] => (\d+)/);
+            totDeut = extractRes(MEMORY_CR, /\[debris_deuterium_total\] => (\d+)/);
         }
 
         document.getElementById('totalMetal').dataset.val = totMet;
@@ -326,11 +397,11 @@ function parseRawData() {
         if(validPlayers.length > 0) {
             calculateDistribution();
         } else {
-            throw new Error("No players found.");
+            throw new Error("Nessun giocatore trovato.");
         }
     } catch (e) {
         console.error(e);
-        // Error handling silent or console only as requested to remove "OK 3 players"
+        alert("Errore nell'elaborazione: " + e.message);
     }
 }
 
@@ -372,7 +443,6 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
-        // Reimbursement
         let rimbM = p.lossM;
         let rimbC = p.lossC;
         let rimbD = p.lossD;
@@ -383,7 +453,6 @@ function calculateDistribution() {
             netM = 0; netC = 0; netD = 0;
         }
 
-        // Profit Share
         let shareM = 0, shareC = 0, shareD = 0;
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
             shareM = netM / realParticipants; shareC = netC / realParticipants; shareD = netD / realParticipants;
@@ -406,25 +475,20 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
-    // Summary
     summaryDiv.innerHTML = `
         <div class="sum-item"><span class="sum-label">${t.sum_cdr}</span><span class="sum-val" style="color:var(--primary)">${fmt(totalCDR)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_loss}</span><span class="sum-val" style="color:var(--danger)">${fmt(totalLoss)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_profit}</span><span class="sum-val" style="color:var(--success)">${fmt(totalProfit)}</span></div>
     `;
 
-    // Cards
     let htmlCards = "";
     let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
-        // --- LOGIC CHANGE: Balance is now NET PROFIT ---
         const transportBalance = p.totalDue - p.harvestedValue;
         const netProfit = p.totalDue - p.totalLoss;
-        
         let balanceClass = transportBalance > 100 ? "status-rec" : (transportBalance < -100 ? "status-pay" : "status-even");
         let balanceLabel = transportBalance > 100 ? t.status_rec : (transportBalance < -100 ? t.status_pay : t.status_even);
-        
         const weightStr = p.weightPercentage.toFixed(2) + "%";
 
         htmlCards += `
@@ -451,7 +515,6 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
             </div>
         </div>`;
 
-        // Report Text
         txtReport += `> ${p.name} (${t.card_weight}: ${weightStr})\n`;
         txtReport += `  ${t.rep_spetta}: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
         txtReport += `  ${t.card_bal}: ${netProfit > 0 ? '+' + fmt(netProfit) : fmt(netProfit)}\n`;
@@ -459,7 +522,6 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     });
     cardsContainer.innerHTML = htmlCards;
 
-    // Transport
     const transportHTML = generateTransportPlanHTML(players, t);
     transportContainer.innerHTML = transportHTML;
     const tempDiv = document.createElement("div");

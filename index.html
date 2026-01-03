@@ -22,7 +22,7 @@
     </div>
 
     <div class="header-section">
-        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V2.5</span></h1>
+        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V2.6</span></h1>
     </div>
 
     <div class="glass-panel config-bar">
@@ -55,24 +55,23 @@
     <div class="glass-panel input-section">
         <div class="panel-head">
             <div class="step-badge">2</div>
-            <h3 data-key="sec_input">Inserimento Dati RAW</h3>
+            <h3 data-key="sec_input">Inserimento Dati (Smart Box)</h3>
+            
+            <div class="memory-indicators">
+                <div id="status-cr" class="mem-badge"><i class="fas fa-times"></i> CR</div>
+                <div id="status-rr" class="mem-badge"><i class="fas fa-hashtag"></i> 0 RR</div>
+                <button id="btn-reset-all" class="btn-icon-small" title="Reset All"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
         
-        <div class="input-grid">
-            <div class="input-box">
-                <div class="box-label"><i class="fas fa-fighter-jet"></i> Combat Report (CR)</div>
-                <textarea id="raw-cr" placeholder="API..."></textarea>
-            </div>
-            <div class="input-box">
-                <div class="box-label"><i class="fas fa-recycle"></i> Recycle Report (RR)</div>
-                <textarea id="raw-rr" placeholder="API..."></textarea>
-            </div>
+        <div class="unified-input-container">
+            <textarea id="unified-input" placeholder="Incolla qui qualsiasi API (Combattimento o Reciclata)... Il sistema la riconoscerà in automatico."></textarea>
+            <div id="input-feedback" class="input-feedback"></div>
         </div>
 
         <button class="btn-main" id="btn-parse">
             <span data-key="btn_parse">AVVIA SPARTIZIONE</span> <i class="fas fa-rocket"></i>
         </button>
-        <div id="parse-status" class="status-msg" style="display:none"></div>
     </div>
 
     <div style="display:none;">
