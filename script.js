@@ -29,7 +29,8 @@ const LANG_DATA = {
         trans_none: "✅ Nessun trasporto necessario!",
         rep_title: "SPARTIZIONE CDR",
         rep_flight: "PIANO DI VOLO",
-        rep_spetta: "Spetta"
+        rep_spetta: "Spetta",
+        ph_unified: "Incolla qui API Combattimento (CR) o Reciclate (RR)... Il sistema le riconosce in automatico."
     },
     en: {
         sec_input: "Smart Data Input",
@@ -60,7 +61,8 @@ const LANG_DATA = {
         trans_none: "✅ No transport needed!",
         rep_title: "ACS SPLIT",
         rep_flight: "FLIGHT PLAN",
-        rep_spetta: "Due"
+        rep_spetta: "Due",
+        ph_unified: "Paste Combat Report (CR) or Recycle Report (RR) API here... Auto-detection enabled."
     },
     de: {
         sec_input: "Smart Daten Eingabe",
@@ -91,7 +93,8 @@ const LANG_DATA = {
         trans_none: "✅ Kein Transport nötig!",
         rep_title: "AKS AUFTEILUNG",
         rep_flight: "FLUGPLAN",
-        rep_spetta: "Anteil"
+        rep_spetta: "Anteil",
+        ph_unified: "Fügen Sie hier Kampfbericht (KB) oder Abbau (RR) API ein... Automatische Erkennung."
     },
     es: {
         sec_input: "Entrada Datos Smart",
@@ -122,7 +125,8 @@ const LANG_DATA = {
         trans_none: "✅ ¡No se necesita transporte!",
         rep_title: "REPARTO SAC",
         rep_flight: "PLAN DE VUELO",
-        rep_spetta: "Corresp."
+        rep_spetta: "Corresp.",
+        ph_unified: "Pega aquí la API de Batalla (CR) o Reciclaje (RR)... Detección automática."
     },
     fr: {
         sec_input: "Saisie Données Smart",
@@ -153,7 +157,8 @@ const LANG_DATA = {
         trans_none: "✅ Aucun transport nécessaire !",
         rep_title: "RÉPARTITION AG",
         rep_flight: "PLAN DE VOL",
-        rep_spetta: "Dû"
+        rep_spetta: "Dû",
+        ph_unified: "Collez l'API de Combat (RC) ou de Recyclage (RR) ici... Détection automatique."
     }
 };
 
@@ -196,13 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
 /* --- UNIFIED SMART INPUT LOGIC --- */
 function handleUnifiedInput() {
     const txt = this.value;
-    const feedback = document.getElementById('input-feedback');
-    
     // 1. Check for CR (Attackers + Rounds)
     if(txt.includes("attackers") && txt.includes("rounds")) {
         MEMORY_CR = txt;
         this.value = ""; 
-        showFeedback("Combat Report Caricato!", "success");
+        showFeedback("Combat Report OK!", "success");
         updateMemoryUI();
         return;
     }
@@ -211,7 +214,7 @@ function handleUnifiedInput() {
     if(txt.includes("recycler_count") && txt.includes("owner_id")) {
         MEMORY_RR.push(txt);
         this.value = ""; 
-        showFeedback("Reciclata Aggiunta!", "success");
+        showFeedback("Reciclata OK!", "success");
         updateMemoryUI();
         return;
     }
@@ -231,7 +234,7 @@ function updateMemoryUI() {
     
     if (MEMORY_CR) {
         crBadge.classList.add('active');
-        crBadge.innerHTML = '<i class="fas fa-check"></i> CR OK';
+        crBadge.innerHTML = '<i class="fas fa-check"></i> CR';
     } else {
         crBadge.classList.remove('active');
         crBadge.innerHTML = '<i class="fas fa-times"></i> CR';
@@ -250,18 +253,29 @@ function resetAll() {
     MEMORY_CR = "";
     MEMORY_RR = [];
     updateMemoryUI();
-    showFeedback("Memoria Svuotata", "error");
+    showFeedback("Reset OK", "error");
 }
 
 function setLanguage(lang) {
     currentLang = lang;
     const t = LANG_DATA[lang];
+    
+    // Traduzione testi statici
     document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.getAttribute('data-key');
         if (t[key]) el.innerText = t[key];
     });
+
+    // Traduzione Placeholder dinamico
+    const input = document.getElementById('unified-input');
+    if(input && t.ph_unified) {
+        input.placeholder = t.ph_unified;
+    }
+
+    // Aggiornamento bottoni
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
+    
     if (playersList.length > 0) calculateDistribution();
 }
 
@@ -295,6 +309,8 @@ function parseData() {
             const startIdx = currentMatch.index;
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
+            
+            // Name finding logic
             const headerChunk = sectionContent.substring(Math.max(0, startIdx - 500), startIdx);
             const nameMatch = headerChunk.match(/\[fleet_owner\] => (.*)/);
             const pName = nameMatch ? nameMatch[1].trim() : `Player ${pId}`;
@@ -319,7 +335,7 @@ function parseData() {
             }
         }
 
-        // 2. PARSE LOSSES FROM MEMORY_CR
+        // 2. PARSE LOSSES
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
         const roundBlocks = MEMORY_CR.split('[round_number] =>');
 
@@ -346,7 +362,7 @@ function parseData() {
             }
         }
 
-        // 3. PARSE HARVEST FROM MEMORY_RR (Array)
+        // 3. PARSE HARVEST
         let totMet = 0, totCrys = 0, totDeut = 0;
         
         MEMORY_RR.forEach(rrText => {
@@ -401,7 +417,7 @@ function parseData() {
         }
     } catch (e) {
         console.error(e);
-        alert("Errore nell'elaborazione: " + e.message);
+        alert("Errore: " + e.message);
     }
 }
 
@@ -443,16 +459,15 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
-        let rimbM = p.lossM;
-        let rimbC = p.lossC;
-        let rimbD = p.lossD;
-
+        // Reimbursement
+        let rimbM = p.lossM, rimbC = p.lossC, rimbD = p.lossD;
         if ((totMet+totCrys+totDeut) < (totalLossM+totalLossC+totalLossD)) {
             const ratio = (totMet+totCrys+totDeut) / (totalLossM+totalLossC+totalLossD);
             rimbM *= ratio; rimbC *= ratio; rimbD *= ratio;
             netM = 0; netC = 0; netD = 0;
         }
 
+        // Profit
         let shareM = 0, shareC = 0, shareD = 0;
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
             shareM = netM / realParticipants; shareC = netC / realParticipants; shareD = netD / realParticipants;
@@ -475,12 +490,14 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
+    // Summary
     summaryDiv.innerHTML = `
         <div class="sum-item"><span class="sum-label">${t.sum_cdr}</span><span class="sum-val" style="color:var(--primary)">${fmt(totalCDR)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_loss}</span><span class="sum-val" style="color:var(--danger)">${fmt(totalLoss)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_profit}</span><span class="sum-val" style="color:var(--success)">${fmt(totalProfit)}</span></div>
     `;
 
+    // Cards
     let htmlCards = "";
     let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
@@ -522,6 +539,7 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
     });
     cardsContainer.innerHTML = htmlCards;
 
+    // Transport
     const transportHTML = generateTransportPlanHTML(players, t);
     transportContainer.innerHTML = transportHTML;
     const tempDiv = document.createElement("div");
