@@ -30,7 +30,9 @@ const LANG_DATA = {
         rep_title: "SPARTIZIONE CDR",
         rep_flight: "PIANO DI VOLO",
         rep_spetta: "Spetta",
-        ph_unified: "Incolla qui API Combattimento (CR) o Reciclate (RR)... Il sistema le riconosce in automatico."
+        rep_gain_det: "GUADAGNO",
+        ph_unified: "Incolla qui API Combattimento (CR) o Reciclate (RR)... Il sistema le riconosce in automatico.",
+        res_m: "Metallo", res_c: "Cristallo", res_d: "Deuterio"
     },
     en: {
         sec_input: "Smart Data Input",
@@ -62,7 +64,9 @@ const LANG_DATA = {
         rep_title: "ACS SPLIT",
         rep_flight: "FLIGHT PLAN",
         rep_spetta: "Due",
-        ph_unified: "Paste Combat Report (CR) or Recycle Report (RR) API here... Auto-detection enabled."
+        rep_gain_det: "PROFIT",
+        ph_unified: "Paste Combat Report (CR) or Recycle Report (RR) API here... Auto-detection enabled.",
+        res_m: "Metal", res_c: "Crystal", res_d: "Deuterium"
     },
     de: {
         sec_input: "Smart Daten Eingabe",
@@ -94,7 +98,9 @@ const LANG_DATA = {
         rep_title: "AKS AUFTEILUNG",
         rep_flight: "FLUGPLAN",
         rep_spetta: "Anteil",
-        ph_unified: "Fügen Sie hier Kampfbericht (KB) oder Abbau (RR) API ein... Automatische Erkennung."
+        rep_gain_det: "GEWINN",
+        ph_unified: "Fügen Sie hier Kampfbericht (KB) oder Abbau (RR) API ein... Automatische Erkennung.",
+        res_m: "Metall", res_c: "Kristall", res_d: "Deuterium"
     },
     es: {
         sec_input: "Entrada Datos Smart",
@@ -126,7 +132,9 @@ const LANG_DATA = {
         rep_title: "REPARTO SAC",
         rep_flight: "PLAN DE VUELO",
         rep_spetta: "Corresp.",
-        ph_unified: "Pega aquí la API de Batalla (CR) o Reciclaje (RR)... Detección automática."
+        rep_gain_det: "GANANCIA",
+        ph_unified: "Pega aquí la API de Batalla (CR) o Reciclaje (RR)... Detección automática.",
+        res_m: "Metal", res_c: "Cristal", res_d: "Deuterio"
     },
     fr: {
         sec_input: "Saisie Données Smart",
@@ -158,7 +166,9 @@ const LANG_DATA = {
         rep_title: "RÉPARTITION AG",
         rep_flight: "PLAN DE VOL",
         rep_spetta: "Dû",
-        ph_unified: "Collez l'API de Combat (RC) ou de Recyclage (RR) ici... Détection automatique."
+        rep_gain_det: "PROFIT",
+        ph_unified: "Collez l'API de Combat (RC) ou de Recyclage (RR) ici... Détection automatique.",
+        res_m: "Métal", res_c: "Cristal", res_d: "Deutérium"
     }
 };
 
@@ -185,10 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
     document.getElementById('btn-reset-all').addEventListener('click', resetAll);
     
-    // UNIFIED INPUT LISTENER
     document.getElementById('unified-input').addEventListener('input', handleUnifiedInput);
 
-    // LIVE RECALC
     document.querySelectorAll('input[name="method"], input[name="role"]').forEach(input => {
         input.addEventListener('change', () => {
             if(playersList.length > 0) calculateDistribution();
@@ -201,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
 /* --- UNIFIED SMART INPUT LOGIC --- */
 function handleUnifiedInput() {
     const txt = this.value;
-    // 1. Check for CR (Attackers + Rounds)
     if(txt.includes("attackers") && txt.includes("rounds")) {
         MEMORY_CR = txt;
         this.value = ""; 
@@ -209,8 +216,6 @@ function handleUnifiedInput() {
         updateMemoryUI();
         return;
     }
-
-    // 2. Check for RR (Recycler + Owner ID)
     if(txt.includes("recycler_count") && txt.includes("owner_id")) {
         MEMORY_RR.push(txt);
         this.value = ""; 
@@ -259,23 +264,14 @@ function resetAll() {
 function setLanguage(lang) {
     currentLang = lang;
     const t = LANG_DATA[lang];
-    
-    // Traduzione testi statici
     document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.getAttribute('data-key');
         if (t[key]) el.innerText = t[key];
     });
-
-    // Traduzione Placeholder dinamico
     const input = document.getElementById('unified-input');
-    if(input && t.ph_unified) {
-        input.placeholder = t.ph_unified;
-    }
-
-    // Aggiornamento bottoni
+    if(input && t.ph_unified) input.placeholder = t.ph_unified;
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
-    
     if (playersList.length > 0) calculateDistribution();
 }
 
@@ -291,7 +287,6 @@ function parseData() {
     let playerIdToIndexMap = {}; 
     
     try {
-        // 1. PARSE PLAYERS FROM MEMORY_CR
         const roleStartTag = role === 'attacker' ? '[attackers] => Array' : '[defenders] => Array';
         const parts = MEMORY_CR.split(roleStartTag);
         if (parts.length < 2) throw new Error(`Sezione ${role} non trovata nel CR.`);
@@ -310,14 +305,14 @@ function parseData() {
             const endIdx = nextMatch ? nextMatch.index : sectionContent.length;
             const playerChunk = sectionContent.substring(startIdx, endIdx);
             
-            // Name finding logic
             const headerChunk = sectionContent.substring(Math.max(0, startIdx - 500), startIdx);
             const nameMatch = headerChunk.match(/\[fleet_owner\] => (.*)/);
             const pName = nameMatch ? nameMatch[1].trim() : `Player ${pId}`;
 
             playersList[i] = {
                 index: i, id: pId, name: pName,
-                initialValue: 0, lossM: 0, lossC: 0, lossD: 0,
+                initialValue: 0, initialM: 0, initialC: 0, initialD: 0,
+                lossM: 0, lossC: 0, lossD: 0,
                 harvestedM: 0, harvestedC: 0, harvestedD: 0, harvestedValue: 0,
                 dueM: 0, dueC: 0, dueD: 0, weightPercentage: 0
             };
@@ -329,13 +324,15 @@ function parseData() {
                 const sId = parseInt(sMatch[1]);
                 const count = parseInt(sMatch[2]);
                 if (SHIPS_COST[sId]) {
-                    const val = (SHIPS_COST[sId].m + SHIPS_COST[sId].c + SHIPS_COST[sId].d) * count;
-                    playersList[i].initialValue += val;
+                    const cost = SHIPS_COST[sId];
+                    playersList[i].initialM += cost.m * count;
+                    playersList[i].initialC += cost.c * count;
+                    playersList[i].initialD += cost.d * count;
+                    playersList[i].initialValue += (cost.m + cost.c + cost.d) * count;
                 }
             }
         }
 
-        // 2. PARSE LOSSES
         const lossKeyword = role === 'attacker' ? '[attacker_ship_losses]' : '[defender_ship_losses]';
         const roundBlocks = MEMORY_CR.split('[round_number] =>');
 
@@ -362,7 +359,6 @@ function parseData() {
             }
         }
 
-        // 3. PARSE HARVEST
         let totMet = 0, totCrys = 0, totDeut = 0;
         
         MEMORY_RR.forEach(rrText => {
@@ -390,7 +386,8 @@ function parseData() {
                     const newIdx = playersList.length;
                     playersList.push({
                         index: newIdx, id: recId, name: recName + " (Ext)",
-                        initialValue: 0, lossM: 0, lossC: 0, lossD: 0,
+                        initialValue: 0, initialM: 0, initialC: 0, initialD: 0,
+                        lossM: 0, lossC: 0, lossD: 0,
                         harvestedM: m, harvestedC: c, harvestedD: d, harvestedValue: (m + c + d),
                         dueM: 0, dueC: 0, dueD: 0, weightPercentage: 0
                     });
@@ -410,11 +407,9 @@ function parseData() {
         document.getElementById('totalDeuterium').dataset.val = totDeut;
 
         const validPlayers = playersList.filter(p => p !== undefined);
-        if(validPlayers.length > 0) {
-            calculateDistribution();
-        } else {
-            throw new Error("Nessun giocatore trovato.");
-        }
+        if(validPlayers.length > 0) calculateDistribution();
+        else throw new Error("Nessun giocatore trovato.");
+        
     } catch (e) {
         console.error(e);
         alert("Errore: " + e.message);
@@ -433,8 +428,7 @@ function calculateDistribution() {
     const totDeut = parseFloat(document.getElementById('totalDeuterium').dataset.val) || 0;
     const method = document.querySelector('input[name="method"]:checked').value;
     
-    let groupLoss = 0;
-    let groupInitial = 0;
+    let groupLoss = 0, groupInitial = 0;
     let totalLossM = 0, totalLossC = 0, totalLossD = 0;
 
     const activeList = playersList.filter(p => p);
@@ -459,7 +453,6 @@ function calculateDistribution() {
     const realParticipants = activeList.filter(pl => pl.initialValue > 0).length;
 
     activeList.forEach(p => {
-        // Reimbursement
         let rimbM = p.lossM, rimbC = p.lossC, rimbD = p.lossD;
         if ((totMet+totCrys+totDeut) < (totalLossM+totalLossC+totalLossD)) {
             const ratio = (totMet+totCrys+totDeut) / (totalLossM+totalLossC+totalLossD);
@@ -467,7 +460,6 @@ function calculateDistribution() {
             netM = 0; netC = 0; netD = 0;
         }
 
-        // Profit
         let shareM = 0, shareC = 0, shareD = 0;
         if (method === 'equal' && realParticipants > 0 && p.initialValue > 0) {
             shareM = netM / realParticipants; shareC = netC / realParticipants; shareD = netD / realParticipants;
@@ -485,28 +477,46 @@ function calculateDistribution() {
     generateDashboard(activeList, totMet+totCrys+totDeut, groupLoss, (netM+netC+netD), method, tData);
 }
 
+function getTooltipHTML(m, c, d) {
+    return `<div class="custom-tooltip">
+        <div class="tt-row"><span class="c-met">Met:</span> <span class="tt-val">${fmt(m)}</span></div>
+        <div class="tt-row"><span class="c-crys">Cry:</span> <span class="tt-val">${fmt(c)}</span></div>
+        <div class="tt-row"><span class="c-deut">Deu:</span> <span class="tt-val">${fmt(d)}</span></div>
+    </div>`;
+}
+
 function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t) {
     const summaryDiv = document.getElementById('global-summary');
     const cardsContainer = document.getElementById('cards-container');
     const transportContainer = document.getElementById('transport-container');
     
-    // Summary
     summaryDiv.innerHTML = `
         <div class="sum-item"><span class="sum-label">${t.sum_cdr}</span><span class="sum-val" style="color:var(--primary)">${fmt(totalCDR)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_loss}</span><span class="sum-val" style="color:var(--danger)">${fmt(totalLoss)}</span></div>
         <div class="sum-item"><span class="sum-label">${t.sum_profit}</span><span class="sum-val" style="color:var(--success)">${fmt(totalProfit)}</span></div>
     `;
 
-    // Cards
     let htmlCards = "";
-    let txtReport = `--- 📊 ${t.rep_title} (${method.toUpperCase()}) ---\n`;
+    let txtReport = `--- ${t.rep_title} (${method.toUpperCase()}) ---\n`;
 
     players.forEach(p => {
-        const transportBalance = p.totalDue - p.harvestedValue;
         const netProfit = p.totalDue - p.totalLoss;
+        const transportBalance = p.totalDue - p.harvestedValue;
+        
         let balanceClass = transportBalance > 100 ? "status-rec" : (transportBalance < -100 ? "status-pay" : "status-even");
         let balanceLabel = transportBalance > 100 ? t.status_rec : (transportBalance < -100 ? t.status_pay : t.status_even);
         const weightStr = p.weightPercentage.toFixed(2) + "%";
+
+        const gainM = p.dueM - p.lossM;
+        const gainC = p.dueC - p.lossC;
+        const gainD = p.dueD - p.lossD;
+
+        const strGainM = (gainM > 0 ? '+' : '') + fmt(gainM);
+        const strGainC = (gainC > 0 ? '+' : '') + fmt(gainC);
+        const strGainD = (gainD > 0 ? '+' : '') + fmt(gainD);
+
+        const ttInit = `M: ${fmt(p.initialM)}\nC: ${fmt(p.initialC)}\nD: ${fmt(p.initialD)}`;
+        const ttLoss = `M: ${fmt(p.lossM)}\nC: ${fmt(p.lossC)}\nD: ${fmt(p.lossD)}`;
 
         htmlCards += `
         <div class="player-card">
@@ -515,15 +525,37 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
                 <span class="status-badge ${balanceClass}">${balanceLabel}</span>
             </div>
             <div class="card-body">
-                <div class="data-row"><span class="d-label">${t.card_fleet}</span><span class="d-val">${fmt(p.initialValue)}</span></div>
-                <div class="data-row"><span class="d-label">${t.card_weight}</span><span class="d-val" style="color:var(--warning)">${weightStr}</span></div>
-                <div class="data-row"><span class="d-label">${t.card_loss}</span><span class="d-val" style="color:var(--danger)">-${fmt(p.totalLoss)}</span></div>
-                <div class="data-row"><span class="d-label">${t.card_harvest}</span><span class="d-val" style="color:var(--primary)">${fmt(p.harvestedValue)}</span></div>
+                <div class="data-row">
+                    <span class="d-label">${t.card_fleet}</span>
+                    <span class="d-val tooltip-container">
+                        <i class="fas fa-info-circle info-icon"></i>${fmt(p.initialValue)}
+                        ${getTooltipHTML(p.initialM, p.initialC, p.initialD)}
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="d-label">${t.card_weight}</span>
+                    <span class="d-val" style="color:var(--warning)">${weightStr}</span>
+                </div>
+                <div class="data-row">
+                    <span class="d-label">${t.card_loss}</span>
+                    <span class="d-val tooltip-container" style="color:var(--danger)">
+                        <i class="fas fa-info-circle info-icon"></i>-${fmt(p.totalLoss)}
+                        ${getTooltipHTML(p.lossM, p.lossC, p.lossD)}
+                    </span>
+                </div>
+                
                 <div class="res-breakdown">
-                    <div style="text-align:center; margin-bottom:5px; color:#fff; font-weight:bold;">${t.card_due}</div>
-                    <div class="res-row"><span class="c-met">M</span> <span>${fmt(p.dueM)}</span></div>
-                    <div class="res-row"><span class="c-crys">C</span> <span>${fmt(p.dueC)}</span></div>
-                    <div class="res-row"><span class="c-deut">D</span> <span>${fmt(p.dueD)}</span></div>
+                    <div class="res-breakdown-title">${t.card_harvest}</div>
+                    <div class="res-row"><span class="c-met">M</span> <span class="c-met">${fmt(p.harvestedM)}</span></div>
+                    <div class="res-row"><span class="c-crys">C</span> <span class="c-crys">${fmt(p.harvestedC)}</span></div>
+                    <div class="res-row"><span class="c-deut">D</span> <span class="c-deut">${fmt(p.harvestedD)}</span></div>
+                </div>
+
+                <div class="res-breakdown">
+                    <div class="res-breakdown-title">${t.card_due}</div>
+                    <div class="res-row"><span class="c-met">M</span> <span class="c-met">${fmt(p.dueM)}</span></div>
+                    <div class="res-row"><span class="c-crys">C</span> <span class="c-crys">${fmt(p.dueC)}</span></div>
+                    <div class="res-row"><span class="c-deut">D</span> <span class="c-deut">${fmt(p.dueD)}</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -533,53 +565,79 @@ function generateDashboard(players, totalCDR, totalLoss, totalProfit, method, t)
         </div>`;
 
         txtReport += `> ${p.name} (${t.card_weight}: ${weightStr})\n`;
-        txtReport += `  ${t.rep_spetta}: M:${fmt(p.dueM)} C:${fmt(p.dueC)} D:${fmt(p.dueD)}\n`;
-        txtReport += `  ${t.card_bal}: ${netProfit > 0 ? '+' + fmt(netProfit) : fmt(netProfit)}\n`;
-        txtReport += `  [${transportBalance > 0 ? t.status_rec + ' ' + fmt(transportBalance) : t.status_pay + ' ' + fmt(Math.abs(transportBalance))}]\n\n`;
+        txtReport += `Spetta: [${t.res_m}] ${fmt(p.dueM)} [${t.res_c}] ${fmt(p.dueC)} [${t.res_d}] ${fmt(p.dueD)}\n`;
+        txtReport += `${t.rep_gain_det}: [${t.res_m}] ${strGainM} [${t.res_c}] ${strGainC} [${t.res_d}] ${strGainD}\n`;
+        txtReport += `TOTAL ${t.card_bal}: ${netProfit > 0 ? '+' + fmt(netProfit) : fmt(netProfit)}\n\n`;
     });
     cardsContainer.innerHTML = htmlCards;
 
-    // Transport
-    const transportHTML = generateTransportPlanHTML(players, t);
-    transportContainer.innerHTML = transportHTML;
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = transportHTML.replace(/<div class="trade-route"/g, "\n>").replace(/<\/div>/g, "").replace(/<[^>]+>/g, " ");
-    txtReport += `\n--- ✈️ ${t.rep_flight} ---\n${tempDiv.innerText}`;
+    const transportData = generateTransportPlan(players, t);
+    transportContainer.innerHTML = transportData.html;
+    
+    txtReport += `\n--- ${t.rep_flight} ---\n${transportData.text}`;
 
     document.getElementById('copyText').innerText = txtReport;
 }
 
-function generateTransportPlanHTML(players, t) {
+function generateTransportPlan(players, t) {
     let html = "";
-    const solve = (resName, propHarvested, propDue, cssClass, iconClass) => {
+    let text = "";
+
+    const solve = (resName, resKey, propHarvested, propDue, cssClass, iconClass) => {
         let senders = [], receivers = [];
         players.forEach(p => {
             const diff = p[propHarvested] - p[propDue];
             if (diff > 100) senders.push({ name: p.name, amount: diff });
             else if (diff < -100) receivers.push({ name: p.name, amount: -diff });
         });
-        if (senders.length === 0) return "";
+        
+        if (senders.length === 0) return { html: "", text: "" };
 
-        let block = `<div class="transport-block"><div class="trans-title"><i class="fas ${iconClass}"></i> ${resName}</div>`;
+        // Determine block class based on resource key for coloring title
+        const blockClass = (resKey === 'res_m') ? 'block-met' : (resKey === 'res_c') ? 'block-crys' : 'block-deut';
+
+        let blockHTML = `<div class="transport-block ${blockClass}"><div class="trans-title"><i class="fas ${iconClass}"></i> ${resName}</div>`;
+        let blockText = `\n[ ${resName.toUpperCase()} ]\n`;
+
         senders.forEach(sender => {
             while (sender.amount > 1) {
                 if (receivers.length === 0) break;
                 let receiver = receivers[0];
                 let amt = Math.min(sender.amount, receiver.amount);
-                block += `<div class="trade-route ${cssClass}"><span class="r-name">${sender.name}</span> <span class="r-arr">${t.trans_send}</span> <span class="r-amt">${fmt(amt)}</span> <span class="r-arr">${t.trans_to}</span> <span class="r-name">${receiver.name}</span></div>`;
+                
+                blockHTML += `<div class="trade-route ${cssClass}">
+                    <span class="r-name">${sender.name}</span> 
+                    <span class="r-mid">
+                        <span class="r-amt">${fmt(amt)}</span>
+                        <span class="r-arr">${t.trans_send} <i class="fas fa-arrow-right"></i></span>
+                    </span>
+                    <span class="r-name">${receiver.name}</span>
+                </div>`;
+                
+                blockText += `> ${sender.name} ${t.trans_send} ${fmt(amt)} ${t.trans_to} ${receiver.name}\n`;
+
                 sender.amount -= amt; receiver.amount -= amt;
                 if (receiver.amount < 1) receivers.shift();
             }
         });
-        return block + "</div>";
+        
+        blockHTML += "</div>";
+        return { html: blockHTML, text: blockText };
     };
 
-    html += solve("Metal", "harvestedM", "dueM", "route-met", "fa-cube");
-    html += solve("Crystal", "harvestedC", "dueC", "route-crys", "fa-gem");
-    html += solve("Deuterium", "harvestedD", "dueD", "route-deut", "fa-flask");
+    const resM = solve(t.res_m, "res_m", "harvestedM", "dueM", "route-met", "fa-cube");
+    const resC = solve(t.res_c, "res_c", "harvestedC", "dueC", "route-crys", "fa-gem");
+    const resD = solve(t.res_d, "res_d", "harvestedD", "dueD", "route-deut", "fa-flask");
 
-    if(html === "") return `<div class="transport-block" style="text-align:center; color:var(--success); border-color:var(--success)">${t.trans_none}</div>`;
-    return html;
+    html = resM.html + resC.html + resD.html;
+    text = resM.text + resC.text + resD.text;
+
+    if(html === "") {
+        html = `<div class="transport-block" style="text-align:center; color:var(--success); border-color:var(--success); font-size: 1rem; padding: 15px;">${t.trans_none}</div>`;
+        text = `\n${t.trans_none}\n`;
+    }
+
+    return { html, text };
 }
 
 function fmt(n) { return new Intl.NumberFormat('it-IT').format(Math.floor(n)); }
