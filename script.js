@@ -605,15 +605,7 @@ function generateTransportPlan(players, t) {
                 let receiver = receivers[0];
                 let amt = Math.min(sender.amount, receiver.amount);
                 
-                blockHTML += `<div class="trade-route ${cssClass}">
-                    <span class="r-name">${sender.name}</span> 
-                    <span class="r-mid">
-                        <span class="r-amt">${fmt(amt)}</span>
-                        <span class="r-arr">${t.trans_send} <i class="fas fa-arrow-right"></i></span>
-                    </span>
-                    <span class="r-name">${receiver.name}</span>
-                </div>`;
-                
+                blockHTML += `<div class="trade-route ${cssClass}"><span class="r-name">${sender.name}</span> <span class="r-arr">${t.trans_send}</span> <span class="r-amt">${fmt(amt)}</span> <span class="r-arr">${t.trans_to}</span> <span class="r-name">${receiver.name}</span></div>`;
                 blockText += `> ${sender.name} ${t.trans_send} ${fmt(amt)} ${t.trans_to} ${receiver.name}\n`;
 
                 sender.amount -= amt; receiver.amount -= amt;
