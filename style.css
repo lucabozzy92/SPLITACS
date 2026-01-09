@@ -15,8 +15,9 @@
     --crystal: #79c0ff;
     --deuterium: #56d364;
 
-    --font-tech: 'Orbitron', sans-serif;
-    --font-body: 'Roboto', sans-serif;
+    /* FONT STANDARD V3 */
+    --font-tech: 'Rajdhani', sans-serif;
+    --font-body: 'Inter', sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -26,24 +27,30 @@ body {
     background-image: radial-gradient(circle at 50% 0%, #1c2333 0%, #0b0e14 70%);
     color: var(--text-main);
     font-family: var(--font-body);
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
+    margin: 0; padding: 20px; min-height: 100vh;
 }
 
 .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
 
 /* HEADER */
-.header-section { text-align: center; margin-bottom: 20px; padding-top: 10px; }
-.main-title { font-family: var(--font-tech); font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; margin: 0; background: linear-gradient(to bottom, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.main-title { font-family: var(--font-tech); font-size: 2.2rem; font-weight: 700; letter-spacing: 2px; margin: 0; background: linear-gradient(to bottom, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .highlight { color: var(--primary); -webkit-text-fill-color: var(--primary); }
-.v-tag { font-size: 0.4em; background: var(--primary-dim); border: 1px solid var(--primary); color: var(--primary); -webkit-text-fill-color: var(--primary); padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 10px; }
+.v-tag { font-size: 0.4em; background: var(--primary-dim); border: 1px solid var(--primary); color: var(--primary); -webkit-text-fill-color: var(--primary); padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 10px; font-weight: 600; }
 
-/* LANGUAGE */
-.lang-bar { position: absolute; top: 0; right: 0; display: flex; gap: 4px; }
-.lang-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 4px 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-.lang-btn:hover { color: white; border-color: var(--primary); }
-.lang-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
+/* HOME BUTTON */
+.home-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(0, 212, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; font-size: 1.2rem; transition: 0.3s; box-shadow: 0 0 10px var(--primary-dim); text-decoration: none; }
+.home-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); transform: translateY(-2px); }
+
+/* LANGUAGE SELECTOR */
+.lang-bar { display: flex; align-items: center; }
+.lang-select { 
+    background: rgba(0, 0, 0, 0.5); border: 1px solid var(--primary); color: var(--text-muted); 
+    padding: 6px 12px; font-family: var(--font-tech); font-weight: 700; font-size: 0.9rem; 
+    border-radius: 4px; outline: none; cursor: pointer; transition: 0.3s; 
+}
+.lang-select:hover, .lang-select:focus { border-color: var(--primary); color: white; box-shadow: 0 0 10px var(--primary-dim); }
+.lang-select option { background-color: #0a0b10; color: white; }
 
 /* PANELS */
 .glass-panel { background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; }
@@ -104,7 +111,7 @@ textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 15
 .card-header { background: rgba(0,0,0,0.3); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 7px 7px 0 0; }
 .card-footer { padding: 10px; text-align: center; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); border-radius: 0 0 7px 7px; }
 
-.p-name { font-family: var(--font-tech); color: white; font-size: 1rem; }
+.p-name { font-family: var(--font-tech); color: white; font-size: 1rem; font-weight: bold; }
 .status-badge { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
 .status-rec { background: rgba(35, 134, 54, 0.2); color: #7ee787; border: 1px solid #238636; }
 .status-pay { background: rgba(218, 54, 51, 0.2); color: #ff7b72; border: 1px solid #da3633; }
@@ -175,8 +182,41 @@ textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 15
 
 .box-label { font-size: 0.8rem; font-weight: bold; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
 .result-box { background: #05070a; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-family: monospace; padding: 10px; border-radius: 6px; font-size: 0.75rem; height: 180px; overflow-y: auto; margin-bottom: 10px; }
-.btn-copy { width: 100%; padding: 10px; background: var(--success); border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-family: var(--font-tech); transition: 0.3s; }
-.btn-copy:hover { filter: brightness(1.1); }
+
+/* ACTION BUTTONS GRID */
+.action-buttons-grid { display: flex; gap: 10px; margin-bottom: 10px; }
+.btn-copy { flex: 2; padding: 12px; background: var(--success); border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-family: var(--font-tech); transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-copy:hover { filter: brightness(1.1); box-shadow: 0 0 10px rgba(35, 134, 54, 0.4); }
+
+/* SOCIAL BUTTONS */
+.btn-share { flex: 1; border: none; border-radius: 6px; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+.btn-wa { background: #25D366; }
+.btn-wa:hover { box-shadow: 0 0 10px #25D366; }
+.btn-tg { background: #0088cc; }
+.btn-tg:hover { box-shadow: 0 0 10px #0088cc; }
+
+/* TICKET BUTTON - HIGH VISIBILITY ORANGE */
+.btn-ticket { 
+    width: 100%; 
+    padding: 12px; 
+    background: linear-gradient(90deg, #ff8c00, #ff4500); 
+    border: none; 
+    border-radius: 6px; 
+    color: white; 
+    font-weight: 800; 
+    cursor: pointer; 
+    font-family: var(--font-tech); 
+    transition: 0.3s; 
+    font-size: 0.9rem; 
+    display: flex; align-items: center; justify-content: center; gap: 8px; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn-ticket:hover { 
+    filter: brightness(1.2); 
+    box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); 
+    transform: translateY(-1px);
+}
 
 @media (max-width: 768px) {
     .config-content { flex-direction: column; gap: 15px; }
