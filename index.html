@@ -3,26 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OGame ACS Splitter</title>
+    <title>OGame ACS Splitter V3.5</title>
+    <link rel="stylesheet" href="../style.css"> 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div class="background-overlay"></div>
 
 <div class="container">
-    <div class="lang-bar">
-        <button class="lang-btn active" onclick="setLanguage('it')">IT</button>
-        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
-        <button class="lang-btn" onclick="setLanguage('de')">DE</button>
-        <button class="lang-btn" onclick="setLanguage('es')">ES</button>
-        <button class="lang-btn" onclick="setLanguage('fr')">FR</button>
-    </div>
-
+    
     <div class="header-section">
-        <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V3.0</span></h1>
+        <a href="../index.html" class="home-btn" title="Torna alla Home"><i class="fas fa-home"></i></a>
+        <div class="logo-area">
+            <h1 class="main-title">OGAME <span class="highlight">ACS</span> SPLIT <span class="v-tag">V3.5</span></h1>
+        </div>
+        <div class="lang-bar">
+            <select id="lang-select" class="input-cyber lang-select" onchange="setLanguage(this.value)">
+                <option value="it">IT</option>
+                <option value="en">EN</option>
+                <option value="de">DE</option>
+                <option value="fr">FR</option>
+                <option value="es">ES</option>
+                <option value="pl">PL</option>
+                <option value="tr">TR</option>
+                <option value="pt">PT</option>
+                <option value="nl">NL</option>
+                <option value="ru">RU</option>
+                <option value="cz">CZ</option>
+                <option value="hr">HR</option>
+                <option value="hu">HU</option>
+                <option value="ro">RO</option>
+                <option value="sk">SK</option>
+                <option value="br">BR</option>
+                <option value="jp">JP</option>
+            </select>
+        </div>
     </div>
 
     <div class="glass-panel config-bar">
@@ -43,9 +61,9 @@
             <div class="config-group">
                 <span class="c-label" data-key="lbl_method"><i class="fas fa-balance-scale"></i> Metodo:</span>
                 <div class="toggle-switch">
-                    <input type="radio" id="met_eq" name="method" value="equal" checked>
+                    <input type="radio" id="met_eq" name="method" value="equal">
                     <label for="met_eq" data-key="opt_equal">Equa</label>
-                    <input type="radio" id="met_wei" name="method" value="weighted">
+                    <input type="radio" id="met_wei" name="method" value="weighted" checked>
                     <label for="met_wei" data-key="opt_weighted">Pesata</label>
                 </div>
             </div>
@@ -65,7 +83,7 @@
         </div>
         
         <div class="unified-input-container">
-            <textarea id="unified-input" placeholder="Incolla qui qualsiasi API (Combattimento o Reciclata)..."></textarea>
+            <textarea id="unified-input" placeholder="..."></textarea>
             <div id="input-feedback" class="input-feedback"></div>
         </div>
 
@@ -75,10 +93,12 @@
     </div>
 
     <div style="display:none;">
-        <input type="hidden" id="totalMetal"><input type="hidden" id="totalCrystal"><input type="hidden" id="totalDeuterium">
+        <input type="hidden" id="totalMetal" data-val="0">
+        <input type="hidden" id="totalCrystal" data-val="0">
+        <input type="hidden" id="totalDeuterium" data-val="0">
     </div>
 
-    <div class="glass-panel dashboard-section">
+    <div id="dashboard-area" style="display:none;" class="glass-panel dashboard-section">
         <div class="panel-head">
             <div class="step-badge">3</div>
             <div class="head-flex">
@@ -92,13 +112,26 @@
 
         <div class="split-layout">
             <div class="split-col">
-                <div class="box-label"><i class="fas fa-shuttle-space"></i> Piano Trasporti</div>
+                <div class="box-label"><i class="fas fa-shuttle-space"></i> <span data-key="rep_flight">Piano Trasporti</span></div>
                 <div id="transport-container" class="transport-grid"></div>
             </div>
+            
             <div class="split-col">
                 <div class="box-label"><i class="fas fa-file-alt"></i> <span data-key="lbl_report">Report Testuale</span></div>
+                
                 <div class="result-box" id="copyText">...</div>
-                <button class="btn-copy" id="btn-copy" data-key="btn_copy">COPIA REPORT</button>
+                
+                <textarea id="ticket-text" style="display:none;"></textarea>
+
+                <div class="action-buttons-grid">
+                    <button class="btn-copy" id="btn-copy" data-key="btn_copy">COPIA REPORT</button>
+                    <button class="btn-share btn-wa" id="btn-wa"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn-share btn-tg" id="btn-tg"><i class="fab fa-telegram-plane"></i></button>
+                </div>
+                
+                <button class="btn-ticket" id="btn-ticket" data-key="btn_ticket">
+                    <i class="fas fa-user-shield"></i> COPIA PER TICKET SYSTEM
+                </button>
             </div>
         </div>
     </div>
